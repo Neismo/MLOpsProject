@@ -159,7 +159,7 @@ def preprocess(
     eval_dataset = load_from_disk(str(output_folder / "eval"))
     test_dataset = load_from_disk(str(output_folder / "test"))
 
-    print(f"Creating training and evaluation pairs using {loss.value}...")
+    print(f"Creating training, evaluation and test pairs using {loss.value}...")
     match loss:
         case LossType.ContrastiveLoss:
             pair_fn = create_contrastive_pairs
@@ -169,8 +169,8 @@ def preprocess(
             raise ValueError(f"Unsupported loss type: {loss}")
 
     create_pairs(dataset=train_dataset, pair_fn=pair_fn, save_path=output_folder / "train_pairs", num_pairs=number_of_pairs, text_field="abstract", seed=seed)
-    create_pairs(dataset=eval_dataset, pair_fn=pair_fn, save_path=output_folder / "eval_pairs", num_pairs=number_of_pairs, text_field="abstract", seed=seed)
-    create_pairs(dataset=test_dataset, pair_fn=pair_fn, save_path=output_folder / "test_pairs", num_pairs=number_of_pairs, text_field="abstract", seed=seed)
+    create_pairs(dataset=eval_dataset, pair_fn=pair_fn, save_path=output_folder / "eval_pairs", num_pairs=number_of_pairs//100, text_field="abstract", seed=seed)
+    create_pairs(dataset=test_dataset, pair_fn=pair_fn, save_path=output_folder / "test_pairs", num_pairs=number_of_pairs//100, text_field="abstract", seed=seed)
 
     print("Done!")
 
