@@ -1,6 +1,10 @@
-# mlops_project
+# Machine Learning Operations Project
 
-ML Ops Project
+ML Ops Project for 02476 @DTU
+
+## Project Description
+
+In this project we will work with classification of ArXiv papers from the abstracts using the dataet publically available at [huggingface](https://huggingface.co/datasets/nick007x/arxiv-papers).
 
 ## Project structure
 
