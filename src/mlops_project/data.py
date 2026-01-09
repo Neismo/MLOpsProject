@@ -5,6 +5,7 @@ from datasets import load_dataset
 from torch.utils.data import Dataset
 
 COLUMNS = ["primary_subject", "subjects", "abstract", "title"]
+COLUMNS_TRAIN = ["abstract", "primary_subject"]
 
 
 class ArxivPapersDataset(Dataset):
@@ -24,6 +25,8 @@ class ArxivPapersDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict:
         """Return a given sample from the dataset."""
+
+        # Force (anchor, positive) tuple format for SentenceTransformer for now!
         return self.dataset[index]
 
 
@@ -32,8 +35,8 @@ def preprocess(output_folder: Path = Path("data"), test_size: float = 0.2, seed:
     print("Downloading arxiv-papers dataset...")
     dataset = load_dataset("nick007x/arxiv-papers", split="train")
 
-    print(f"Selecting columns: {COLUMNS}")
-    dataset = dataset.select_columns(COLUMNS)
+    print(f"Selecting columns: {COLUMNS_TRAIN}")
+    dataset = dataset.select_columns(COLUMNS_TRAIN)
 
     print(f"Splitting dataset (test_size={test_size})...")
     splits = dataset.train_test_split(test_size=test_size, seed=seed)
