@@ -1,5 +1,8 @@
 docs/site/
 
+# Models Cache
+models/cache/  
+
 # test cache
 manual_test/
 
