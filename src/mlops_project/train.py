@@ -9,6 +9,7 @@ from mlops_project.data import ArxivPapersDataset
 # setup loggers
 logger.remove()
 logger.add(sys.stdout, level="DEBUG")
+logger.add(f"{get_original_cwd()}/train.log", level="DEBUG", rotation="2 MB")
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train_config")
 def train(config):
