@@ -21,6 +21,12 @@ We will use the arXiv papers [dataset](https://huggingface.co/datasets/nick007x/
 1. Predicting the subject category of a paper based on its text
 2. Retrieving semantically similar papers using embedding-based similarity search
 
+### To download and create dataset
+
+```bash
+uv run python -m mlops_project.data
+```
+
 ## Models
 
 We plan to use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. Depending on available training time and resources, we will also experiment with larger and more expressive models, such as [all-mpnet-base-v2](https://huggingface.co/sentence-transformers/all-mpnet-base-v2), to compare how model scale impacts embedding quality and downstream performance.
