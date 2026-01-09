@@ -4,6 +4,7 @@ docs/site/
 models/cache/  
 data/
 outputs/
+wandb/
 # test cache
 manual_test/
 
