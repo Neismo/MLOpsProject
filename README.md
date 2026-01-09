@@ -12,7 +12,7 @@ For deployment we plan to make a FastAPI endpoint running in a docker container.
 
 ## Frameworks
 
-The project will be implemented in **Python** using **PyTorch** as the deep learning backend. We will use the **sentence-transformers** library to handle transformer-based embedding models, loss functions for contrastive learning, and evaluation utilities. Experiment tracking and metric logging will be handled with **Weights & Biases (WandB)** to enable comparison between different model configurations and training runs. **Hydra** will be used for configuration management, allowing us to define datasets, model parameters, and training settings in a modular and reproducible way.
+The project will be implemented in `Python` using `PyTorch` as the deep learning backend. We will use the `sentence-transformers` library to handle transformer-based embedding models, loss functions for contrastive learning, and evaluation utilities. Experiment tracking and metric logging will be handled with `Weights & Biases (WandB)` to enable comparison between different model configurations and training runs. `Hydra` will be used for configuration management, allowing us to define datasets, model parameters, and training settings in a modular and reproducible way.
 
 ## Data
 
