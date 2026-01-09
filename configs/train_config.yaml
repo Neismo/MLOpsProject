@@ -1,0 +1,6 @@
+train:
+  seed: 42
+  epochs: 10
+  batch_size: 32
+  warmup_steps: 100
+  loss: MultipleNegativesRankingLoss # default, good for positive only pairs

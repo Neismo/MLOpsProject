@@ -2,7 +2,8 @@ docs/site/
 
 # Models Cache
 models/cache/  
-
+data/
+outputs/
 # test cache
 manual_test/
 
