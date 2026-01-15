@@ -3,18 +3,20 @@ import typing
 import numpy as np
 import typer
 from datasets import load_dataset
-from torch.utils.data import Dataset
 from collections import defaultdict
 from datasets import Dataset
 from datasets import load_from_disk
 import random
 from enum import Enum
 
+
 class LossType(str, Enum):
     ContrastiveLoss = "ContrastiveLoss"
     MultipleNegativesRankingLoss = "MultipleNegativesRankingLoss"
 
+
 COLUMNS = ["primary_subject", "subjects", "abstract", "title"]
+
 
 class ArxivPapersDataset(Dataset):
     """Arxiv papers dataset from Hugging Face."""
@@ -23,6 +25,7 @@ class ArxivPapersDataset(Dataset):
         path = data_dir / split
         if path.exists():
             from datasets import load_from_disk
+
             self.dataset = load_from_disk(str(path))
         else:
             raise FileNotFoundError(f"Dataset not found at {path}. Run preprocessing first.")
@@ -35,29 +38,30 @@ class ArxivPapersDataset(Dataset):
         """Return a given sample from the dataset."""
         return self.dataset[index]
 
+
 def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42):
     """
     Create balanced positive and negative pairs for ContrastiveLoss.
-    
+
     Returns a dataset with columns: sentence1, sentence2, label
     - label=1.0 for positive pairs (same subject)
     - label=0.0 for negative pairs (different subjects)
     """
     random.seed(seed)
     np.random.seed(seed)
-    
+
     # Group indices by subject
     subject_to_indices = defaultdict(list)
     for idx, subject in enumerate(dataset["primary_subject"]):
         subject_to_indices[subject].append(idx)
-    
+
     subjects = list(subject_to_indices.keys())
     print(f"Found {len(subjects)} unique subjects")
-    
+
     pairs = {"sentence1": [], "sentence2": [], "label": []}
     num_positive = num_pairs // 2
     num_negative = num_pairs - num_positive
-    
+
     # Create positive pairs (same subject)
     print(f"Creating {num_positive} positive pairs...")
     for _ in range(num_positive):
@@ -66,7 +70,7 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
         pairs["sentence1"].append(dataset[idx1][text_field])
         pairs["sentence2"].append(dataset[idx2][text_field])
         pairs["label"].append(1.0)
-    
+
     # Create negative pairs (different subjects)
     print(f"Creating {num_negative} negative pairs...")
     for _ in range(num_negative):
@@ -76,44 +80,48 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
         pairs["sentence1"].append(dataset[idx1][text_field])
         pairs["sentence2"].append(dataset[idx2][text_field])
         pairs["label"].append(0.0)
-    
+
     return Dataset.from_dict(pairs)
 
 
 def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42):
     """
     Create positive pairs for MultipleNegativesRankingLoss.
-    
+
     Returns a dataset with columns: anchor, positive
     Each pair contains two abstracts from papers with the same primary_subject.
     MNRL will use in-batch negatives automatically.
     """
     random.seed(seed)
     np.random.seed(seed)
-    
+
     subject_to_indices = defaultdict(list)
     for idx, subject in enumerate(dataset["primary_subject"]):
         subject_to_indices[subject].append(idx)
-    
+
     subjects = [s for s in subject_to_indices.keys() if len(subject_to_indices[s]) >= 2]
     print(f"Found {len(subjects)} subjects with 2+ samples")
-    
+
     pairs = {"anchor": [], "positive": []}
-    
+
     print(f"Creating {num_pairs} positive pairs...")
     for _ in range(num_pairs):
         subject = random.choice(subjects)
         idx1, idx2 = random.sample(subject_to_indices[subject], 2)
         pairs["anchor"].append(dataset[idx1][text_field])
         pairs["positive"].append(dataset[idx2][text_field])
-    
+
     return Dataset.from_dict(pairs)
 
-def create_pairs(dataset, pair_fn: typing.Callable, save_path: Path, num_pairs: int, text_field: str = "abstract", seed: int = 42) -> Dataset:
+
+def create_pairs(
+    dataset, pair_fn: typing.Callable, save_path: Path, num_pairs: int, text_field: str = "abstract", seed: int = 42
+) -> Dataset:
     """Create and save pairs to disk."""
     pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed)
     pairs.save_to_disk(str(save_path))
     return pairs
+
 
 def load_pairs(load_path: Path) -> Dataset:
     """Load pairs from disk."""
@@ -122,12 +130,14 @@ def load_pairs(load_path: Path) -> Dataset:
     print(f"Loading pairs from {load_path}")
     return load_from_disk(str(load_path))
 
+
 def preprocess(
     loss: LossType = LossType.MultipleNegativesRankingLoss,
     output_folder: Path = Path("data"),
     test_size: float = 0.2,
     number_of_pairs: int = 1_000_000,
-    seed: int = 42) -> None:
+    seed: int = 42,
+) -> None:
     """Download and preprocess the arxiv papers dataset."""
     print("Downloading arxiv-papers dataset...")
     dataset = load_dataset("nick007x/arxiv-papers", split="train")
@@ -168,11 +178,33 @@ def preprocess(
         case _:
             raise ValueError(f"Unsupported loss type: {loss}")
 
-    create_pairs(dataset=train_dataset, pair_fn=pair_fn, save_path=output_folder / "train_pairs", num_pairs=number_of_pairs, text_field="abstract", seed=seed)
-    create_pairs(dataset=eval_dataset, pair_fn=pair_fn, save_path=output_folder / "eval_pairs", num_pairs=number_of_pairs//100, text_field="abstract", seed=seed)
-    create_pairs(dataset=test_dataset, pair_fn=pair_fn, save_path=output_folder / "test_pairs", num_pairs=number_of_pairs//100, text_field="abstract", seed=seed)
+    create_pairs(
+        dataset=train_dataset,
+        pair_fn=pair_fn,
+        save_path=output_folder / "train_pairs",
+        num_pairs=number_of_pairs,
+        text_field="abstract",
+        seed=seed,
+    )
+    create_pairs(
+        dataset=eval_dataset,
+        pair_fn=pair_fn,
+        save_path=output_folder / "eval_pairs",
+        num_pairs=number_of_pairs // 100,
+        text_field="abstract",
+        seed=seed,
+    )
+    create_pairs(
+        dataset=test_dataset,
+        pair_fn=pair_fn,
+        save_path=output_folder / "test_pairs",
+        num_pairs=number_of_pairs // 100,
+        text_field="abstract",
+        seed=seed,
+    )
 
     print("Done!")
+
 
 if __name__ == "__main__":
     typer.run(preprocess)

@@ -1,37 +1,39 @@
+from mlops_project.data import load_pairs
+from mlops_project.model import instantiate_sentence_transformer as get_model
+from mlops_project.data import ArxivPapersDataset
 import torch
-assert torch.cuda.is_available()
 from loguru import logger
 import hydra
 import sys
 from pathlib import Path
 from hydra.utils import get_original_cwd
-from mlops_project.model import instantiate_sentence_transformer as get_model
 from sentence_transformers.evaluation import InformationRetrievalEvaluator
-from mlops_project.data import ArxivPapersDataset
 from collections import defaultdict
-from mlops_project.data import load_pairs
 import numpy as np
 from sentence_transformers import SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 from sentence_transformers.losses import ContrastiveLoss, MultipleNegativesRankingLoss
+
+assert torch.cuda.is_available()
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
 logger.add("train.log", level="DEBUG", rotation="5 MB")
 
+
 def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-retrieval"):
     np.random.seed(42)
     indices = np.random.choice(len(dataset), min(sample_size, len(dataset)), replace=False)
-    
+
     # Split indices: first 20% for queries, rest for corpus (no overlap)
     num_queries = sample_size // 5
     query_indices = indices[:num_queries]
     corpus_indices = indices[num_queries:]
-    
+
     queries = {}
     corpus = {}
     relevant_docs = {}
     subject_to_corpus_ids = defaultdict(set)
-    
+
     # Build corpus from corpus_indices only
     for i, idx in enumerate(corpus_indices):
         idx = int(idx)
@@ -39,7 +41,7 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
         corpus[corpus_id] = dataset[idx]["abstract"]
         subject = dataset[idx]["primary_subject"]
         subject_to_corpus_ids[subject].add(corpus_id)
-    
+
     # Build queries from query_indices (no overlap with corpus)
     for i, idx in enumerate(query_indices):
         idx = int(idx)
@@ -48,13 +50,13 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
         subject = dataset[idx]["primary_subject"]
         # Relevant docs are corpus docs with same subject
         relevant_docs[query_id] = subject_to_corpus_ids[subject].copy()
-    
+
     # Filter out queries with no relevant docs
     queries = {qid: q for qid, q in queries.items() if len(relevant_docs.get(qid, set())) > 0}
     relevant_docs = {qid: docs for qid, docs in relevant_docs.items() if qid in queries}
-    
+
     logger.info(f"IR Evaluator: {len(queries)} queries, {len(corpus)} corpus docs (no overlap)")
-    
+
     return InformationRetrievalEvaluator(
         queries=queries,
         corpus=corpus,
@@ -68,7 +70,7 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train_config")
 def train(config):
     logger.debug(f"Training config:\n{config}")
-    
+
     test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
     model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
 
@@ -127,6 +129,7 @@ def train(config):
 
     # Start training
     trainer.train()
+
 
 if __name__ == "__main__":
     train()

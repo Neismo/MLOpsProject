@@ -1,7 +1,7 @@
 docs/site/
 
 # Models Cache
-models/cache/  
+models/cache/
 data/
 outputs/
 wandb/
