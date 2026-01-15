@@ -97,7 +97,9 @@ def train(config):
 
     wandb_enabled = config.wandb.enabled and not WANDB_DISABLED
     if not wandb_enabled:
-        logger.info("W&B logging disabled (config.wandb.enabled=%s, WANDB_DISABLED=%s)", config.wandb.enabled, WANDB_DISABLED)
+        logger.info(
+            f"W&B logging disabled (config.wandb.enabled={config.wandb.enabled}, WANDB_DISABLED={WANDB_DISABLED})"
+        )
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
