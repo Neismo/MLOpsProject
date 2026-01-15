@@ -52,6 +52,5 @@ train.log
 
 # Other
 LICENSE
-README.md
 tasks.py
 *.arrow
