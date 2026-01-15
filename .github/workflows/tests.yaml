@@ -2,12 +2,14 @@
 name: Unit Tests
 
 on:
-  workflow_run:
-    workflows: ['Check code formatting']
-    types: [completed]
-    branches: ['master']
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
 jobs:
   test:
+    needs: format
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:

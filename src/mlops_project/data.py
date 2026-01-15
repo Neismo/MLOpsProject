@@ -58,7 +58,7 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
     subjects = list(subject_to_indices.keys())
     print(f"Found {len(subjects)} unique subjects")
 
-    pairs = {"sentence1": [], "sentence2": [], "label": []}
+    pairs: dict[str, list[str | float]] = {"sentence1": [], "sentence2": [], "label": []}
     num_positive = num_pairs // 2
     num_negative = num_pairs - num_positive
 
@@ -102,7 +102,7 @@ def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "a
     subjects = [s for s in subject_to_indices.keys() if len(subject_to_indices[s]) >= 2]
     print(f"Found {len(subjects)} subjects with 2+ samples")
 
-    pairs = {"anchor": [], "positive": []}
+    pairs: dict[str, list[str]] = {"anchor": [], "positive": []}
 
     print(f"Creating {num_pairs} positive pairs...")
     for _ in range(num_pairs):
