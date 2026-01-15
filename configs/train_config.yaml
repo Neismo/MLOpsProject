@@ -1,5 +1,7 @@
 meta:
   save_model: true
+  use_gcs: false
+  bucket_name: mlops-proj
 train:
   seed: 42
   epochs: 1

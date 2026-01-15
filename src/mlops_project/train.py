@@ -80,13 +80,17 @@ def train(config):
     test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
     model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
 
-    # Create/load training pairs
-    train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
+    # Create/load training/eval pairs
+    if config.meta.use_gcs:
+        train_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/train_pairs")
+        eval_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/eval_pairs")
+    else:
+        train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
+        eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
+
     train_pairs = mlops_project.data.load_pairs(train_pairs_path)
     logger.info(f"Training pairs: {len(train_pairs)}")
 
-    # Create/load evaluation pairs
-    eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
     eval_pairs = mlops_project.data.load_pairs(eval_pairs_path)
     logger.info(f"Evaluation pairs: {len(eval_pairs)}")
 
@@ -101,9 +105,17 @@ def train(config):
             f"W&B logging disabled (config.wandb.enabled={config.wandb.enabled}, WANDB_DISABLED={WANDB_DISABLED})"
         )
 
+    if config.meta.use_gcs:
+        model_dir = Path(f"/gcs/{config.meta.bucket_name}/models/contrastive-minilm")
+    else:
+        model_dir = Path(f"{get_original_cwd()}/models/contrastive-minilm")
+
+    # create model directory if it doesn't exist
+    model_dir.mkdir(parents=True, exist_ok=True)
+
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=f"{get_original_cwd()}/models/contrastive-minilm",
+        output_dir=str(model_dir),
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
