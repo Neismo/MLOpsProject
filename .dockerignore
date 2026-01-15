@@ -1,0 +1,57 @@
+# Data (mounted as volume at runtime)
+data/
+models/
+outputs/
+wandb/
+
+# Development files
+notebooks/
+tests/
+docs/
+reports/
+.vscode/
+.idea/
+
+# Git
+.git/
+.github/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments (created in container)
+.venv/
+venv/
+env/
+ENV/
+
+# Documentation builds
+docs/site/
+docs/_build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+train.log
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+
+# Other
+LICENSE
+README.md
+tasks.py
+*.arrow
