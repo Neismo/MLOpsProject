@@ -1,3 +1,4 @@
+import os
 import mlops_project.data
 from mlops_project.model import instantiate_sentence_transformer as get_model
 from mlops_project.data import ArxivPapersDataset
@@ -13,7 +14,11 @@ import numpy as np
 from sentence_transformers import SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 from sentence_transformers.losses import ContrastiveLoss, MultipleNegativesRankingLoss
 
-assert torch.cuda.is_available()
+REQUIRE_CUDA = os.getenv("REQUIRE_CUDA", "1") != "0"
+if REQUIRE_CUDA:
+    assert torch.cuda.is_available(), "CUDA is required for this run. Set REQUIRE_CUDA=0 to allow CPU/debug runs."
+elif not torch.cuda.is_available():
+    logger.warning("CUDA not available; continuing on CPU because REQUIRE_CUDA=0.")
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
