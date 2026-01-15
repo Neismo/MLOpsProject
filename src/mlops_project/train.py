@@ -1,4 +1,4 @@
-from mlops_project.data import load_pairs
+import mlops_project.data
 from mlops_project.model import instantiate_sentence_transformer as get_model
 from mlops_project.data import ArxivPapersDataset
 import torch
@@ -76,12 +76,12 @@ def train(config):
 
     # Create/load training pairs
     train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
-    train_pairs = load_pairs(train_pairs_path)
+    train_pairs = mlops_project.data.load_pairs(train_pairs_path)
     logger.info(f"Training pairs: {len(train_pairs)}")
 
     # Create/load evaluation pairs
     eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
-    eval_pairs = load_pairs(eval_pairs_path)
+    eval_pairs = mlops_project.data.load_pairs(eval_pairs_path)
     logger.info(f"Evaluation pairs: {len(eval_pairs)}")
 
     # Test dataset for evaluation
@@ -99,7 +99,7 @@ def train(config):
         warmup_ratio=config.train.warmup_ratio,
         eval_strategy="steps",
         eval_steps=500,
-        save_strategy="steps",
+        save_strategy="steps" if config.meta.save_model else "no",
         save_steps=500,
         logging_steps=100,
         fp16=torch.cuda.is_available(),
