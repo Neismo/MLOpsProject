@@ -9,11 +9,11 @@ def test_positive_pairs_dataset_shapes_and_length_and_types(mock_positive_datase
     train_dataset = mlops_project.data.load_pairs("data/train_pairs")
 
     assert len(train_dataset) == N_TRAIN, "Train dataset should not be empty."
-    assert type(train_dataset[0]) is dict, "Each item in the dataset should be a dictionary."
-    assert type(train_dataset[0]["anchor"]) is str and train_dataset[0]["anchor"] is not None, (
+    assert isinstance(train_dataset[0], dict), "Each item in the dataset should be a dictionary."
+    assert isinstance(train_dataset[0]["anchor"], str) and train_dataset[0]["anchor"] is not None, (
         "anchor should be a string."
     )
-    assert type(train_dataset[0]["positive"]) is str and train_dataset[0]["positive"] is not None, (
+    assert isinstance(train_dataset[0]["positive"], str) and train_dataset[0]["positive"] is not None, (
         "positive should be a string."
     )
 
@@ -71,14 +71,14 @@ def test_contrastive_dataset_shapes_and_length_and_types(mock_contrastive_datase
     train_dataset = mlops_project.data.load_pairs("data/train_pairs")
 
     assert len(train_dataset) == N_TRAIN, "Train dataset should not be empty."
-    assert type(train_dataset[0]) is dict, "Each item in the dataset should be a dictionary."
-    assert type(train_dataset[0]["sentence1"]) is str and train_dataset[0]["sentence1"] is not None, (
+    assert isinstance(train_dataset[0], dict), "Each item in the dataset should be a dictionary."
+    assert isinstance(train_dataset[0]["sentence1"], str) and train_dataset[0]["sentence1"] is not None, (
         "sentence1 should be a string."
     )
-    assert type(train_dataset[0]["sentence2"]) is str and train_dataset[0]["sentence2"] is not None, (
+    assert isinstance(train_dataset[0]["sentence2"], str) and train_dataset[0]["sentence2"] is not None, (
         "sentence2 should be a string."
     )
-    assert type(train_dataset[0]["label"]) is float, "label should be a float."
+    assert isinstance(train_dataset[0]["label"], float), "label should be a float."
     assert train_dataset[0]["label"] in [0.0, 1.0], "label should be either 0.0 or 1.0."
 
 
