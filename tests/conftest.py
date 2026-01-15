@@ -1,7 +1,9 @@
 import pytest
 import omegaconf
 import random
+import numpy as np
 import mlops_project.data
+import mlops_project.model
 from tests import N_TRAIN
 
 from datasets import Dataset
@@ -75,6 +77,27 @@ def _generate_mock_positive_pairs_dataset(num_pairs: int = 64) -> Dataset:
         data["positive"].append(positive_text)
 
     return Dataset.from_dict(data)
+
+
+@pytest.fixture(scope="function")
+def mock_sentence_transformer_model(monkeypatch, tmp_path):
+    """Provide a fake SentenceTransformer to avoid downloads during tests."""
+
+    call_info: dict[str, str] = {}
+
+    class _DummySentenceTransformer:
+        def __init__(self, model_name: str, cache_folder: str):
+            call_info["model_name"] = model_name
+            call_info["cache_folder"] = cache_folder
+
+        def __call__(self, sentences: list[str]):
+            return np.zeros((len(sentences), 384))
+
+    monkeypatch.setattr(mlops_project.model, "SentenceTransformer", _DummySentenceTransformer)
+
+    cache_dir = tmp_path / "cache"
+    model = mlops_project.model.instantiate_sentence_transformer(cache_dir=str(cache_dir))
+    return model, call_info, cache_dir
 
 
 @pytest.fixture(autouse=False, scope="function")
