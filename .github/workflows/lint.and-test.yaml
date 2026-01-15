@@ -57,3 +57,21 @@ jobs:
         run: |
           uv run coverage run -m pytest tests/
           uv run coverage report -m
+  build:
+    name: Build and Push Docker Image
+    needs: test # only build if tests pass
+    if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Auth with GCP
+      uses: google-github-actions/auth@v3
+      with:
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY}}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v3
+
+    - name: Submit build
+      run: gcloud builds submit . --config cloudbuild.yaml
