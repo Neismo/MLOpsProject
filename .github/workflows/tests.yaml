@@ -2,10 +2,10 @@
 name: Unit Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_run:
+    workflows: ['Check code formatting']
+    types: [completed]
+    branches: ['master']
 jobs:
   test:
     runs-on: ${{ matrix.operating-system }}
