@@ -184,3 +184,5 @@ cython_debug/
 
 *.arrow
 /data
+
+models/*
