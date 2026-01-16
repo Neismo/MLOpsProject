@@ -7,4 +7,3 @@ images:
 - 'europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-train:cuda'
 options:
   logging: CLOUD_LOGGING_ONLY
-  serviceAccount: projects/mlopsproject-484419/serviceAccounts/githubserviceaccount@mlopsproject-484419.iam.gserviceaccount.com
