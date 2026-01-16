@@ -61,7 +61,7 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test # only build if tests pass
-    if: ${{ github.event_name == 'push' }}  # add on master later to ensure we only build on pushes to master
+    # if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
