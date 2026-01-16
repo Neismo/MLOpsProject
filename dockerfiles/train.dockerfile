@@ -28,7 +28,7 @@ ENV UV_LINK_MODE=copy UV_PYTHON=/usr/bin/python3.12
 COPY pyproject.toml uv.lock README.md ./
 
 # Install dependencies
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project
+RUN uv sync --frozen --no-install-project
 
 # Copy application code
 COPY src/ src/
