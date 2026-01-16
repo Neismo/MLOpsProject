@@ -30,7 +30,7 @@ dependencies = [
     "torch==2.8.0",
     "transformers[torch]>=4.57.3",
     "typer==0.15.1",
-    "uvicorn==0.34.0",
+    "uvicorn==0.40.0",
     "wandb>=0.23.1",
 ]
 
