@@ -2,8 +2,13 @@ docs/site/
 
 # Models Cache
 models/cache/  
-data/
-outputs/
+data/*
+outputs/*
+models/*
+# to track a model do !models/model
+*.arrow
+wandb/
+
 # test cache
 manual_test/
 
@@ -179,6 +184,3 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-
-
-*.arrow
