@@ -53,6 +53,8 @@ docker run --rm --gpus all \
   mlops-train:cuda uv run python src/mlops_project/train.py wandb.enabled=false
 ```
 
+A docker image is automatically built when pushed to the `build` branch if `format + lint` and `tests` actions pass via a GitHub action workflow using the Google Cloud Build. A branch was specifically set up for this to avoid wasting many minutes, as each build can, without optimization of any sorts, take up towards 20 minutes before completion.
+
 ## Models
 
 We plan to use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. Depending on available training time and resources, we will also experiment with larger and more expressive models, such as [all-mpnet-base-v2](https://huggingface.co/sentence-transformers/all-mpnet-base-v2), to compare how model scale impacts embedding quality and downstream performance.
@@ -66,11 +68,12 @@ The directory structure of the project looks like this:
 ├── .github/                  # Github actions and dependabot
 │   ├── dependabot.yaml
 │   └── workflows/
-│       └── tests.yaml
+│       └── lint-test-build.yaml
 ├── configs/                  # Configuration files
 ├── data/                     # Data directory
-│   ├── processed
-│   └── raw
+│   ├── train
+│   └── test
+|   └── eval
 ├── dockerfiles/              # Dockerfiles
 │   ├── api.Dockerfile
 │   └── train.Dockerfile
@@ -109,4 +112,4 @@ The directory structure of the project looks like this:
 
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
-started with Machine Learning Operations (MLOps).
+started with Machine Learning Operations (MLOps). Modified as needed
