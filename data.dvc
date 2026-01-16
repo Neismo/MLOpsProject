@@ -1,0 +1,130 @@
+outs:
+- hash: md5
+  path: data
+  files:
+  - relpath: eval/data-00000-of-00001.arrow
+    md5: fc3facd51d4781e96f1775ae42a357b2
+    size: 476219776
+    cloud:
+      remote_storage:
+        etag: 08e498adb2f48f92031001
+        version_id: '1768561337650276'
+  - relpath: eval/dataset_info.json
+    md5: 591c2295e24e3b8257f777bc2e1acef7
+    size: 1183
+    cloud:
+      remote_storage:
+        etag: 08d3a9c2aaf28f92031001
+        version_id: '1768560784348371'
+  - relpath: eval/state.json
+    md5: d90877c38b53458b73f6ed73af41239b
+    size: 250
+    cloud:
+      remote_storage:
+        etag: 08dfc5b0aaf28f92031001
+        version_id: '1768560784057055'
+  - relpath: test/data-00000-of-00002.arrow
+    md5: 852f4d1ca87de7ca9b479d011c657921
+    size: 297473000
+    cloud:
+      remote_storage:
+        etag: 08879bb695f48f92031001
+        version_id: '1768561276980615'
+  - relpath: test/data-00001-of-00002.arrow
+    md5: 4b9f823c1d8da87820d6b45a5610fbb1
+    size: 297323200
+    cloud:
+      remote_storage:
+        etag: 089b9de0f2f38f92031001
+        version_id: '1768561204268699'
+  - relpath: test/dataset_info.json
+    md5: 591c2295e24e3b8257f777bc2e1acef7
+    size: 1183
+    cloud:
+      remote_storage:
+        etag: 089cbfc5aaf28f92031001
+        version_id: '1768560784400284'
+  - relpath: test/state.json
+    md5: 543780ded44e067b2013fa118cd1d7b5
+    size: 309
+    cloud:
+      remote_storage:
+        etag: 08c1bdc5aaf28f92031001
+        version_id: '1768560784400065'
+  - relpath: train/data-00000-of-00004.arrow
+    md5: 2bdfe861a7601a3a9d162f16871767ee
+    size: 475457696
+    cloud:
+      remote_storage:
+        etag: 08f6b8fcd7f48f92031001
+        version_id: '1768561416543350'
+  - relpath: train/data-00000-of-00005.arrow
+    md5: 0afe9592766d0ade161cddae2708efeb
+    size: 418572248
+    cloud:
+      remote_storage:
+        etag: 08cafeb6a1f48f92031001
+        version_id: '1768561302159178'
+  - relpath: train/data-00001-of-00004.arrow
+    md5: ef742c5f2facd04f749c8e2303762fb3
+    size: 475158560
+    cloud:
+      remote_storage:
+        etag: 0897a699b2f48f92031001
+        version_id: '1768561337324311'
+  - relpath: train/data-00001-of-00005.arrow
+    md5: 4c53d669434604ccc4be21b7e6b5fe32
+    size: 418138120
+    cloud:
+      remote_storage:
+        etag: 08e6d9fddaf48f92031001
+        version_id: '1768561422855398'
+  - relpath: train/data-00002-of-00004.arrow
+    md5: 9e5e616ad70b156eb6e39c836cfdb2ea
+    size: 475709984
+    cloud:
+      remote_storage:
+        etag: 0880f2d7d7f48f92031001
+        version_id: '1768561415944448'
+  - relpath: train/data-00002-of-00005.arrow
+    md5: 61ef34f46db8ff8de078b291534be6e9
+    size: 418536016
+    cloud:
+      remote_storage:
+        etag: 08d0868da9f48f92031001
+        version_id: '1768561318249296'
+  - relpath: train/data-00003-of-00004.arrow
+    md5: c9c924336e2d9a41caa19165f51b71d7
+    size: 475139960
+    cloud:
+      remote_storage:
+        etag: 08fbead2b1f48f92031001
+        version_id: '1768561336169851'
+  - relpath: train/data-00003-of-00005.arrow
+    md5: 8138776a8efb949c24564931ba5a4fbd
+    size: 418386896
+    cloud:
+      remote_storage:
+        etag: 08c3baa6c7f48f92031001
+        version_id: '1768561381580099'
+  - relpath: train/data-00004-of-00005.arrow
+    md5: 470045b853594c1bada173c2edbf089a
+    size: 418289160
+    cloud:
+      remote_storage:
+        etag: 08fa9083a2f48f92031001
+        version_id: '1768561303406714'
+  - relpath: train/dataset_info.json
+    md5: 591c2295e24e3b8257f777bc2e1acef7
+    size: 1183
+    cloud:
+      remote_storage:
+        etag: 08fea9c6aaf28f92031001
+        version_id: '1768560784413950'
+  - relpath: train/state.json
+    md5: 72b7a7eb4e8705d41b5e2c6c1db2c2b7
+    size: 427
+    cloud:
+      remote_storage:
+        etag: 08dcbac6aaf28f92031001
+        version_id: '1768560784416092'

@@ -1,6 +1,12 @@
+meta:
+  save_model: true
+  use_gcs: false
+  bucket_name: mlops-proj
 train:
   seed: 42
-  epochs: 10
-  batch_size: 32
-  warmup_steps: 100
+  epochs: 1
+  batch_size: 256
+  warmup_ratio: 0.1
   loss: MultipleNegativesRankingLoss # default, good for positive only pairs
+wandb:
+  enabled: true
