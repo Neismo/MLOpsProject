@@ -79,13 +79,17 @@ def train(config):
     test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
     model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
 
-    # Create/load training pairs
-    train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
+    # Create/load training/eval pairs
+    if config.meta.use_gcs:
+        train_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/train_pairs")
+        eval_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/eval_pairs")
+    else:
+        train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
+        eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
+
     train_pairs = mlops_project.data.load_pairs(train_pairs_path)
     logger.info(f"Training pairs: {len(train_pairs)}")
 
-    # Create/load evaluation pairs
-    eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
     eval_pairs = mlops_project.data.load_pairs(eval_pairs_path)
     logger.info(f"Evaluation pairs: {len(eval_pairs)}")
 
