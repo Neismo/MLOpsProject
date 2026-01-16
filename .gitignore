@@ -1,9 +1,10 @@
 docs/site/
 
 # Models Cache
-models/cache/  
+models/cache/
 data/
 outputs/
+wandb/
 # test cache
 manual_test/
 
@@ -182,3 +183,6 @@ cython_debug/
 
 
 *.arrow
+/data
+
+models/*
