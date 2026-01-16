@@ -1,4 +1,3 @@
-import os
 import mlops_project.data
 from mlops_project.model import instantiate_sentence_transformer as get_model
 from mlops_project.data import ArxivPapersDataset
@@ -13,13 +12,6 @@ from collections import defaultdict
 import numpy as np
 from sentence_transformers import SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 from sentence_transformers.losses import ContrastiveLoss, MultipleNegativesRankingLoss
-
-REQUIRE_CUDA = os.getenv("REQUIRE_CUDA", "1") != "0"
-WANDB_DISABLED = os.getenv("WANDB_DISABLED", "").lower() in {"1", "true", "yes"}
-if REQUIRE_CUDA:
-    assert torch.cuda.is_available(), "CUDA is required for this run. Set REQUIRE_CUDA=0 to allow CPU/debug runs."
-elif not torch.cuda.is_available():
-    logger.warning("CUDA not available; continuing on CPU because REQUIRE_CUDA=0.")
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -77,6 +69,13 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
 def train(config):
     logger.debug(f"Training config:\n{config}")
 
+    if config.meta.require_cuda:
+        assert torch.cuda.is_available(), (
+            "CUDA is required for this run. Set meta.require_cuda=false to allow CPU/debug runs."
+        )
+    elif not torch.cuda.is_available():
+        logger.warning("CUDA not available. Continuing on CPU.")
+
     test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
     model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
 
@@ -99,23 +98,12 @@ def train(config):
     ir_evaluator = create_ir_evaluator(test_dataset, sample_size=5000)
     logger.info("IR Evaluator created for precision@k metrics")
 
-    wandb_enabled = config.wandb.enabled and not WANDB_DISABLED
-    if not wandb_enabled:
-        logger.info(
-            f"W&B logging disabled (config.wandb.enabled={config.wandb.enabled}, WANDB_DISABLED={WANDB_DISABLED})"
-        )
-
-    if config.meta.use_gcs:
-        model_dir = Path(f"/gcs/{config.meta.bucket_name}/models/contrastive-minilm")
-    else:
-        model_dir = Path(f"{get_original_cwd()}/models/contrastive-minilm")
-
-    # create model directory if it doesn't exist
-    model_dir.mkdir(parents=True, exist_ok=True)
+    if not config.wandb.enabled:
+        logger.info("W&B logging disabled (config.wandb.enabled=false).")
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=str(model_dir),
+        output_dir=f"{get_original_cwd()}/models/contrastive-minilm",
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
@@ -127,7 +115,7 @@ def train(config):
         save_steps=500,
         logging_steps=100,
         fp16=torch.cuda.is_available(),
-        report_to="wandb" if wandb_enabled else "none",
+        report_to="wandb" if config.wandb.enabled else "none",
     )
 
     # Initialize loss function

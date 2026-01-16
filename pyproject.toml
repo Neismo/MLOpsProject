@@ -70,7 +70,10 @@ explicit = true
 
 [tool.ruff]
 line-length = 120
-exclude = ["notebooks/*.ipynb", "reports/*.py"]
+exclude = ["notebooks/*.ipynb", "reports/report.py"]
+
+[tool.mypy]
+exclude = ["notebooks/*.ipynb", "reports/report.py"]
 
 [tool.coverage.run]
 omit = ["tests/*", "/tmp/*", "/private/*"]
