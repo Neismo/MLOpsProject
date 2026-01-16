@@ -7,6 +7,21 @@ train:
   epochs: 1
   batch_size: 256
   warmup_ratio: 0.1
-  loss: MultipleNegativesRankingLoss # default, good for positive only pairs
+  loss: MultipleNegativesRankingLoss
+  learning_rate: 3e-4
+  torch_compile: true
+  tf32: true
+  bf16: false
+  eval_on_start: true
+  eval_steps: 500
+  save_steps: 500
+  logging_steps: 100
+model:
+  name: sentence-transformers/all-MiniLM-L6-v2
+  max_seq_length: 256
+eval:
+  sample_size: 5000
+  stratified: false
+  samples_per_subject: 50
 wandb:
   enabled: true

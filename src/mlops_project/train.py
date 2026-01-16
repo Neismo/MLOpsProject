@@ -1,4 +1,5 @@
 import os
+import random
 import mlops_project.data
 from mlops_project.model import instantiate_sentence_transformer as get_model
 from mlops_project.data import ArxivPapersDataset
@@ -73,12 +74,87 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
     )
 
 
+def create_stratified_ir_evaluator(dataset, samples_per_subject: int = 50, name: str = "arxiv-stratified"):
+    """
+    Creates an IR Evaluator that guarantees coverage of all subjects.
+
+    Caps large subjects to prevent dominance and ensures rare subjects are represented.
+
+    Args:
+        dataset: The dataset to evaluate on.
+        samples_per_subject: Max samples per subject (split between query/corpus).
+        name: Name for the evaluator.
+    """
+    random.seed(42)
+
+    subject_to_indices = defaultdict(list)
+    for idx, subject in enumerate(dataset["primary_subject"]):
+        subject_to_indices[subject].append(idx)
+
+    queries = {}
+    corpus = {}
+    relevant_docs = {}
+    subject_to_corpus_ids = defaultdict(set)
+
+    logger.info(f"Stratifying across {len(subject_to_indices)} subjects...")
+
+    for subject, indices in subject_to_indices.items():
+        if len(indices) < 2:
+            continue
+
+        random.shuffle(indices)
+        n_samples = min(len(indices), samples_per_subject)
+        selected_indices = indices[:n_samples]
+
+        # Split: 20% queries (min 1), rest corpus
+        n_queries = max(1, int(n_samples * 0.2))
+        query_idxs = selected_indices[:n_queries]
+        corpus_idxs = selected_indices[n_queries:]
+
+        for idx in corpus_idxs:
+            corpus_id = f"doc_{idx}"
+            corpus[corpus_id] = dataset[int(idx)]["abstract"]
+            subject_to_corpus_ids[subject].add(corpus_id)
+
+        for idx in query_idxs:
+            query_id = f"query_{idx}"
+            queries[query_id] = dataset[int(idx)]["abstract"]
+            queries[query_id + "_subj"] = subject
+
+    # Link queries to relevant docs
+    final_queries = {}
+    for q_key, q_text in queries.items():
+        if "_subj" in q_key:
+            continue
+        subject = queries[q_key + "_subj"]
+        rel_docs = subject_to_corpus_ids[subject]
+        if len(rel_docs) > 0:
+            final_queries[q_key] = q_text
+            relevant_docs[q_key] = rel_docs
+
+    logger.info(f"Stratified Evaluator: {len(final_queries)} queries, {len(corpus)} corpus docs")
+    logger.info(f"Coverage: {len(subject_to_corpus_ids)} subjects represented")
+
+    return InformationRetrievalEvaluator(
+        queries=final_queries,
+        corpus=corpus,
+        relevant_docs=relevant_docs,
+        name=name,
+        precision_recall_at_k=[1, 5, 10],
+        show_progress_bar=True,
+    )
+
+
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train_config")
 def train(config):
     logger.debug(f"Training config:\n{config}")
 
     test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
-    model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
+    model = get_model(
+        model_name=config.model.name,
+        max_seq_length=config.model.max_seq_length,
+        cache_dir=f"{get_original_cwd()}/models/cache/",
+    )
 
     # Create/load training/eval pairs
     if config.meta.use_gcs:
@@ -94,9 +170,13 @@ def train(config):
     eval_pairs = mlops_project.data.load_pairs(eval_pairs_path)
     logger.info(f"Evaluation pairs: {len(eval_pairs)}")
 
-    # Test dataset for evaluation
     # Create the IR evaluator for precision@k
-    ir_evaluator = create_ir_evaluator(test_dataset, sample_size=5000)
+    if config.eval.stratified:
+        ir_evaluator = create_stratified_ir_evaluator(
+            test_dataset, samples_per_subject=config.eval.samples_per_subject
+        )
+    else:
+        ir_evaluator = create_ir_evaluator(test_dataset, sample_size=config.eval.sample_size)
     logger.info("IR Evaluator created for precision@k metrics")
 
     wandb_enabled = config.wandb.enabled and not WANDB_DISABLED
@@ -119,14 +199,18 @@ def train(config):
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
-        learning_rate=2e-5,
+        learning_rate=config.train.learning_rate,
         warmup_ratio=config.train.warmup_ratio,
         eval_strategy="steps",
-        eval_steps=500,
+        eval_steps=config.train.eval_steps,
+        eval_on_start=config.train.eval_on_start,
         save_strategy="steps" if config.meta.save_model else "no",
-        save_steps=500,
-        logging_steps=100,
-        fp16=torch.cuda.is_available(),
+        save_steps=config.train.save_steps,
+        logging_steps=config.train.logging_steps,
+        torch_compile=config.train.torch_compile and torch.cuda.is_available(),
+        fp16=torch.cuda.is_available() and not config.train.bf16,
+        bf16=config.train.bf16 and torch.cuda.is_available(),
+        tf32=config.train.tf32 and torch.cuda.is_available(),
         report_to="wandb" if wandb_enabled else "none",
     )
 

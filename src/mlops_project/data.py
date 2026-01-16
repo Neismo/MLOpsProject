@@ -84,13 +84,23 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
     return Dataset.from_dict(pairs)
 
 
-def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42):
+def create_positive_pairs(
+    dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42, balanced: bool = True
+):
     """
     Create positive pairs for MultipleNegativesRankingLoss.
 
     Returns a dataset with columns: anchor, positive
     Each pair contains two abstracts from papers with the same primary_subject.
     MNRL will use in-batch negatives automatically.
+
+    Args:
+        dataset: The dataset to create pairs from.
+        num_pairs: Number of pairs to create.
+        text_field: Field to use for text (default: "abstract").
+        seed: Random seed for reproducibility.
+        balanced: If True, sample subjects with equal probability (helps rare subjects).
+                  If False, sample subjects weighted by their frequency (natural distribution).
     """
     random.seed(seed)
     np.random.seed(seed)
@@ -100,13 +110,18 @@ def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "a
         subject_to_indices[subject].append(idx)
 
     subjects = [s for s in subject_to_indices.keys() if len(subject_to_indices[s]) >= 2]
+    subject_weights = [len(subject_to_indices[s]) for s in subjects]
     print(f"Found {len(subjects)} subjects with 2+ samples")
 
     pairs: dict[str, list[str]] = {"anchor": [], "positive": []}
 
-    print(f"Creating {num_pairs} positive pairs...")
+    sampling_mode = "balanced" if balanced else "weighted"
+    print(f"Creating {num_pairs} positive pairs ({sampling_mode} sampling)...")
     for _ in range(num_pairs):
-        subject = random.choice(subjects)
+        if balanced:
+            subject = random.choice(subjects)
+        else:
+            subject = random.choices(subjects, weights=subject_weights, k=1)[0]
         idx1, idx2 = random.sample(subject_to_indices[subject], 2)
         pairs["anchor"].append(dataset[idx1][text_field])
         pairs["positive"].append(dataset[idx2][text_field])
@@ -115,10 +130,20 @@ def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "a
 
 
 def create_pairs(
-    dataset, pair_fn: typing.Callable, save_path: Path, num_pairs: int, text_field: str = "abstract", seed: int = 42
+    dataset,
+    pair_fn: typing.Callable,
+    save_path: Path,
+    num_pairs: int,
+    text_field: str = "abstract",
+    seed: int = 42,
+    balanced: bool = True,
 ) -> Dataset:
     """Create and save pairs to disk."""
-    pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed)
+    # Only pass balanced to functions that support it (create_positive_pairs)
+    if pair_fn == create_positive_pairs:
+        pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed, balanced=balanced)
+    else:
+        pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed)
     pairs.save_to_disk(str(save_path))
     return pairs
 
@@ -137,6 +162,7 @@ def preprocess(
     test_size: float = 0.2,
     number_of_pairs: int = 1_000_000,
     seed: int = 42,
+    balanced: bool = True,
 ) -> None:
     """Download and preprocess the arxiv papers dataset."""
     print("Downloading arxiv-papers dataset...")
@@ -185,6 +211,7 @@ def preprocess(
         num_pairs=number_of_pairs,
         text_field="abstract",
         seed=seed,
+        balanced=balanced,
     )
 
     create_pairs(
@@ -194,6 +221,7 @@ def preprocess(
         num_pairs=number_of_pairs // 100,
         text_field="abstract",
         seed=seed,
+        balanced=balanced,
     )
     create_pairs(
         dataset=test_dataset,
@@ -202,6 +230,7 @@ def preprocess(
         num_pairs=number_of_pairs // 100,
         text_field="abstract",
         seed=seed,
+        balanced=balanced,
     )
 
     print("Done!")

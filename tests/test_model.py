@@ -9,7 +9,7 @@ def test_instantiate_uses_cache_dir_and_model_name(mock_sentence_transformer_mod
 
     assert cache_dir.exists()
     assert call_info["cache_folder"] == str(cache_dir)
-    assert call_info["model_name"] == "all-MiniLM-L6-v2"
+    assert call_info["model_name"] == "sentence-transformers/all-MiniLM-L6-v2"
     assert model is not None
 
 
