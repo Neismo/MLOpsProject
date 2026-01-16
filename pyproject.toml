@@ -70,6 +70,7 @@ explicit = true
 
 [tool.ruff]
 line-length = 120
+exclude = ["notebooks/*.ipynb"]
 
 [tool.coverage.run]
 omit = ["tests/*", "/tmp/*", "/private/*"]
