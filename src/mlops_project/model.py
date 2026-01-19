@@ -10,6 +10,7 @@ def instantiate_onnx_model(onnx_path: str = "models/arxiv-all-MiniLM-L6-v2.onnx"
     model = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
     return model
 
+
 def instantiate_sentence_transformer(from_checkpoint: bool = False, cache_dir: str = "models/cache/"):
     os.makedirs(cache_dir, exist_ok=True)
     if from_checkpoint:

@@ -126,6 +126,7 @@ def mock_onnx_model(monkeypatch, tmp_path):
     model = mlops_project.model.instantiate_onnx_model(str(onnx_path))
     return model, call_info, onnx_path
 
+
 @pytest.fixture(autouse=False, scope="function")
 def config_base() -> omegaconf.DictConfig:
     """Configuration with wandb disabled and no saving!"""
