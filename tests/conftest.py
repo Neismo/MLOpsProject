@@ -2,6 +2,8 @@ import pytest
 import omegaconf
 import random
 import numpy as np
+import sys
+import types
 import mlops_project.data
 import mlops_project.model
 from tests import N_TRAIN
@@ -99,6 +101,30 @@ def mock_sentence_transformer_model(monkeypatch, tmp_path):
     model = mlops_project.model.instantiate_sentence_transformer(cache_dir=str(cache_dir))
     return model, call_info, cache_dir
 
+
+@pytest.fixture(scope="function")
+def mock_onnx_model(monkeypatch, tmp_path):
+    """Provide a fake onnxruntime session to avoid loading a real ONNX file."""
+
+    call_info: dict[str, object] = {}
+
+    class _DummyInferenceSession:
+        def __init__(self, onnx_path: str, providers: list[str]):
+            call_info["onnx_path"] = onnx_path
+            call_info["providers"] = providers
+
+        def run(self, output_names, input_feed):
+            batch_size = len(next(iter(input_feed.values())))
+            return [np.zeros((batch_size, 384), dtype=np.float32)]
+
+    dummy_module = types.SimpleNamespace(InferenceSession=_DummyInferenceSession)
+
+    monkeypatch.setitem(sys.modules, "onnxruntime", dummy_module)
+    monkeypatch.setattr(mlops_project.model.os.path, "exists", lambda path: True)
+
+    onnx_path = tmp_path / "dummy.onnx"
+    model = mlops_project.model.instantiate_onnx_model(str(onnx_path))
+    return model, call_info, onnx_path
 
 @pytest.fixture(autouse=False, scope="function")
 def config_base() -> omegaconf.DictConfig:
