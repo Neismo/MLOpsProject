@@ -11,23 +11,17 @@ RUN sed -i "s/sys_platform == 'linux' or sys_platform == 'win32'/sys_platform ==
     sed -i "s/sys_platform == 'darwin'/sys_platform == 'darwin' or sys_platform == 'linux'/g" pyproject.toml && \
     uv pip install --system -e .
 
+# Bake model and index into image
+COPY faiss-endpoint/model /data/model
+COPY faiss-endpoint/index /data/index
+
 # Environment variables for model and index paths
-ENV MODEL_PATH=/local/model
-ENV INDEX_PATH=/local/index
+ENV MODEL_PATH=/data/model
+ENV INDEX_PATH=/data/index
 ENV PORT=8000
 
 # Expose port
 EXPOSE 8000
 
-# Startup script that copies from GCS mount to local disk, then starts server
-RUN echo '#!/bin/bash\n\
-mkdir -p /local/model /local/index\n\
-echo "Copying model to local disk..."\n\
-cp -r /data/model/* /local/model/\n\
-echo "Copying index to local disk..."\n\
-cp -r /data/index/* /local/index/\n\
-echo "Starting server..."\n\
-exec python -m uvicorn mlops_project.api:app --host 0.0.0.0 --port 8000\n\
-' > /start.sh && chmod +x /start.sh
-
-ENTRYPOINT ["/start.sh"]
+# Run the API server
+ENTRYPOINT ["python", "-m", "uvicorn", "mlops_project.api:app", "--host", "0.0.0.0", "--port", "8000"]
