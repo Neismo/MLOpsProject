@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
@@ -34,6 +36,18 @@ app = FastAPI(
     title="MLOps Abstract Embedding API",
     version="1.0.0",
 )
+
+# ---------- Mount static files ----------
+
+STATIC_DIR = Path(__file__).parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/static/index.html")
+
 
 # ---------- Load model once at startup ----------
 
@@ -99,6 +113,7 @@ class SearchResultItem(BaseModel):
     abstract: str
     primary_subject: str
     subjects: list[str] = []
+    arxiv_id: str | None = None
 
 
 class SearchResponse(BaseModel):
@@ -171,6 +186,7 @@ def search_similar(request: SearchRequest) -> SearchResponse:
                 abstract=r.abstract,
                 primary_subject=r.primary_subject,
                 subjects=r.subjects if isinstance(r.subjects, list) else [r.subjects] if r.subjects else [],
+                arxiv_id=r.arxiv_id,
             )
             for r in results
         ]

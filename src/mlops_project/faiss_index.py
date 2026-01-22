@@ -1,6 +1,7 @@
 """FAISS vector index for similarity search on paper abstracts."""
 
 import json
+import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ class SearchResult:
     abstract: str
     primary_subject: str
     subjects: list[str]
+    arxiv_id: str | None = None
 
 
 class FAISSIndex:
@@ -34,10 +36,12 @@ class FAISSIndex:
         index: faiss.Index | None = None,
         metadata: list[dict[str, Any]] | None = None,
         nprobe: int = DEFAULT_NPROBE,
+        db_path: Path | None = None,
     ):
         self.index = index
         self.metadata = metadata or []
         self.nprobe = nprobe
+        self.db_path = db_path
 
     @classmethod
     def build(
@@ -107,20 +111,51 @@ class FAISSIndex:
         # Search
         scores, indices = self.index.search(query_embedding, k)
 
-        results = []
-        for score, idx in zip(scores[0], indices[0]):
-            if idx == -1:
-                continue
-            meta = self.metadata[idx]
-            results.append(
-                SearchResult(
-                    score=float(score),
-                    title=meta["title"],
-                    abstract=meta["abstract"],
-                    primary_subject=meta["primary_subject"],
-                    subjects=meta.get("subjects", []),
-                )
+        valid_indices = [int(idx) for idx in indices[0] if idx != -1]
+
+        # Fetch metadata from SQLite if available, otherwise use in-memory list
+        if self.db_path and self.db_path.exists() and valid_indices:
+            conn = sqlite3.connect(self.db_path)
+            placeholders = ",".join("?" * len(valid_indices))
+            cur = conn.execute(
+                f"SELECT id, title, abstract, primary_subject, subjects, arxiv_id FROM papers WHERE id IN ({placeholders})",
+                valid_indices,
             )
+            db_results = {row[0]: row[1:] for row in cur.fetchall()}
+            conn.close()
+
+            results = []
+            for score, idx in zip(scores[0], indices[0]):
+                if idx == -1 or idx not in db_results:
+                    continue
+                title, abstract, primary_subject, subjects, arxiv_id = db_results[idx]
+                subjects_list = subjects.split("; ") if subjects else []
+                results.append(
+                    SearchResult(
+                        score=float(score),
+                        title=title,
+                        abstract=abstract,
+                        primary_subject=primary_subject,
+                        subjects=subjects_list,
+                        arxiv_id=arxiv_id,
+                    )
+                )
+        else:
+            results = []
+            for score, idx in zip(scores[0], indices[0]):
+                if idx == -1:
+                    continue
+                meta = self.metadata[idx]
+                results.append(
+                    SearchResult(
+                        score=float(score),
+                        title=meta["title"],
+                        abstract=meta["abstract"],
+                        primary_subject=meta["primary_subject"],
+                        subjects=meta.get("subjects", []),
+                        arxiv_id=None,
+                    )
+                )
 
         return results
 
@@ -150,7 +185,7 @@ class FAISSIndex:
         """Load a FAISS index from disk.
 
         Args:
-            index_dir: Directory containing index.faiss and metadata.json.
+            index_dir: Directory containing index.faiss and (metadata.db or metadata.json).
             nprobe: Override nprobe value (uses saved value if None).
 
         Returns:
@@ -158,27 +193,40 @@ class FAISSIndex:
         """
         index_dir = Path(index_dir)
         index_path = index_dir / "index.faiss"
+        db_path_candidate = index_dir / "metadata.db"
         metadata_path = index_dir / "metadata.json"
 
         if not index_path.exists():
             raise FileNotFoundError(f"Index file not found: {index_path}")
-        if not metadata_path.exists():
-            raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
 
         logger.info(f"Loading FAISS index from {index_path}")
         index = faiss.read_index(str(index_path))
 
-        logger.info(f"Loading metadata from {metadata_path}")
-        with open(metadata_path) as f:
-            data = json.load(f)
+        # Prefer SQLite database over JSON
+        metadata: list[dict[str, Any]] = []
+        saved_nprobe = cls.DEFAULT_NPROBE
+        db_path: Path | None = None
+        if db_path_candidate.exists():
+            db_path = db_path_candidate
+            logger.info(f"Using SQLite database: {db_path}")
+            # Get nprobe from JSON if it exists
+            if metadata_path.exists():
+                with open(metadata_path) as f:
+                    data = json.load(f)
+                saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
+        elif metadata_path.exists():
+            logger.info(f"Loading metadata from {metadata_path}")
+            with open(metadata_path) as f:
+                data = json.load(f)
+            metadata = data["metadata"]
+            saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
+        else:
+            raise FileNotFoundError(f"Neither {db_path_candidate} nor {metadata_path} found")
 
-        metadata = data["metadata"]
-        saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
         effective_nprobe = nprobe if nprobe is not None else saved_nprobe
-
         logger.info(f"Index loaded: {index.ntotal:,} vectors, nprobe={effective_nprobe}")
 
-        return cls(index=index, metadata=metadata, nprobe=effective_nprobe)
+        return cls(index=index, metadata=metadata, nprobe=effective_nprobe, db_path=db_path)
 
 
 def build_index_from_dataset(
