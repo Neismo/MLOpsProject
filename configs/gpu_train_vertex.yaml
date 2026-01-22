@@ -1,8 +1,26 @@
 workerPoolSpecs:
-    machineSpec:
-        machineType: n1-standard-8
-        acceleratorType: NVIDIA_TESLA_V100
-        acceleratorCount: 1
-    replicaCount: 1
-    containerSpec:
-        imageUri: europe-west1-docker.pkg.dev/mlopsproject-484419/mlops-registry/mlops-train:cuda
+- machineSpec:
+    machineType: n1-standard-8
+    acceleratorType: NVIDIA_TESLA_V100
+    acceleratorCount: 1
+  replicaCount: 1
+  containerSpec:
+    imageUri: europe-west1-docker.pkg.dev/mlopsproject-484419/mlops-registry/mlops-train:cuda
+    env:
+      - name: WANDB_API_KEY
+        value: $WANDB_API_KEY
+    command:
+      - uv
+      - run
+      - python
+      - src/mlops_project/train.py
+    args:
+      - meta.use_gcs=true
+      - meta.bucket_name=mlops-proj
+      - train.epochs=3
+      - train.batch_size=128
+      - dataset.pairs.num_train=50000
+      - dataset.pairs.num_eval=5000
+
+scheduling:
+  timeout: 3600s
