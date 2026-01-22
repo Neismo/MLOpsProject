@@ -148,7 +148,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 3 fill here ---
+In this project we used a third-party framework called `Sentence-Transformers`, a library with access to moderne models for embedding models. We used this to simplify and help make the model and training parts more streamlined with models that we could fine-tune to help with the goal of embedding ArXiv papers based on abstracts and subjects.
 
 ## Coding environment
 
@@ -168,7 +168,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 4 fill here ---
+We used UV to help manage all our dependencies; it is a modern and fast framework. We used it to streamline adding and updating packages we need between members, with a `pyproject.toml` and `uv.lock` making sure the exact same setup was used across our group. We served our code over `GitHub`, to help share code easily and manage any conflicts in approach we might have run into. To get a complete setup ready to go, one should with access to our repository on GitHub, and assuming UV is installed: `git clone REPO`, `cd MLOpsProject`, `uv sync`, `uv run src/mlops_project/data.py` to be ready and have all data processed. Unless Wandb logging is not wished, one should also `wandb logging` if not already done.
 
 ### Question 5
 
@@ -184,7 +184,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 5 fill here ---
+We did indeed initialize the project with a cookiecutter template, specifially the one [found here from the course](https://github.com/SkafteNicki/mlops_template). In this we filled out the `src/mlops_project`, `configs`, `data`, `tests`, and `dockerfiles`. We cache models in `models`, but that is done locally. When training, an `outputs` folder from `Hydra` is emitted with experiments, but that is not shared; as an extra, the training script allows for wandb logging (default).
 
 ### Question 6
 
@@ -199,7 +199,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 6 fill here ---
+We introduced quite a few rules for code quality and formatting. Mostly done by `Ruff` for linting/formatting and `Mypy` for type-checking; this is with pre-commit and in github action workflows both. NOAH MKDOCS HERE. In small projects, these can seem annoying, as checkers like `Mypy` can be really strict, and linters/formatters can make code "less" readable as opposed to how oneself writes. The purpose of these become much clearer when working in larger projects across longer times. They help provide a shared format of code, and makes sure the code is as self-documenting as possible. You can glance the input and return-types easily, without having to guess based on variable names. This can save considerable time and frustration when working with older code or code others have written.
 
 ## Version control
 
@@ -218,7 +218,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 7 fill here ---
+We've implemented quite a few tests. In total we implemented 6 model tests, 17 model tests, and X API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses.
 
 ### Question 8
 
@@ -233,7 +233,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 8 fill here ---
+The total test coverage of the code is around 91%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainy. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't gurantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edgecase of data, if we are not careful.
 
 ### Question 9
 
@@ -248,7 +248,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 9 fill here ---
+We did as much as possible try to use branches and pull requests, if not to not constantly introduce merge commits, then to at least help isolate features to a branch which when done, can be merged into master. We usually just create a new branch when working on something new, for example a google cloud building flow, or an Onnx feature, and then when done, we can merge it into master. We didn't introduce branch safety such as requiring other memebers to go through and review the code, though that can be smart in larger projects with production code that is more vulnerable to breaks.
 
 ### Question 10
 
@@ -263,7 +263,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, `DVC` was set up to allow one to push and pull data from the projects preprocessed part into a cloud bucket with `DVC`. To be fair, it did not have a huge impact on the project to introduce it, but it did streamline the process of moving from/to the cloud. It wouldn't be much harder to utilize the `gcloud` CLI to do it, but at least this introduces version control, and allows sharing the data `.dvc` file over GitHub. Version controlling, including data, will always be valuabel if different data is processed differently, to have a history of data manipulations, or if something breaks the data processsor, one can always recover an earlier, working version of the data.
 
 ### Question 11
 
@@ -280,7 +280,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 11 fill here ---
+Yes, we did end up building a complete continuous integration setup. This included a combination of linting with `Ruff`, formatting with `Ruff` and type-checking with a github action mirror of `Mypy`. We also run `pytest` across windows, ubuntu and macos (latest) to ensure it builds on all the three OS - which are also covered by the individual members of the group. These are "just" mirrors of the pre-commit setup, making sure that we conform to the same standards across our project. We used cache mounting to help speed up the actions as much as possible between runs, as they are mostly identical. We also added a complete `build` step for building our docker image for training in google cloud. This required an authenticated workflow with a service account. This step was considerably slower than the rest, as CUDA images are expensive to build. In case we couldn't cache, we wanted to reduce the amount of time spent doing this. This meant we approached differently at some point, by making sure we did more feature branches and PRs to not build as many images every time a small change was pushed. We do not test across multiple python version as we simply require python 3.12 as the only we use. It is generally best to enforce a single major python version in larger projects. An example of a complete triggered workflow can be seen [here](https://github.com/Neismo/MLOpsProject/actions/runs/21245846868).
 
 ## Running code and tracking experiments
 
@@ -299,7 +299,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 12 fill here ---
+To run simple processes like data preprocessing steps, we made use of `Typer`. It's a very simple CLI library from the same author as `FastAPI`. This allowed us to run those files as neede with command line arguments like `uv run src/mlops_project/data.py --num_pairs=50000`. Otherwise, mostly for training, we use HydraConfig. This simply allows to run different configurations, and each will be saved to an `output` folder sepereted by dates and timestamps, allowing a good, albeit poluted, way to organize different experiments. The different configs are seen in the `configs` folder.
 
 ### Question 13
 
@@ -314,7 +314,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 13 fill here ---
+Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`.
 
 ### Question 14
 
@@ -346,7 +346,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 15 fill here ---
+Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run the docker for serving the fastapi service for using a trained model, run the following code: `docker run api:latest ARGS HERE`.
 
 ### Question 16
 
@@ -378,7 +378,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, and `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
 
 ### Question 18
 
@@ -402,7 +402,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 19 fill here ---
+[Bucket example here](figures/bucket.png)
 
 ### Question 20
 
@@ -411,7 +411,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 20 fill here ---
+[Artifact registry example here](figures/registry.png)
 
 ### Question 21
 
@@ -420,7 +420,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 21 fill here ---
+[Cloud build example here](figures/build.png)
 
 ### Question 22
 
@@ -550,7 +550,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 29 fill here ---
+An overview of the architecture of our system can be seen [here](figures/overview.png)
 
 ### Question 30
 
@@ -582,4 +582,4 @@ s224178, s194591, s224233, s224207
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
---- question 31 fill here ---
+Student s194591 was in charge of the continuous integrations, project structure and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and built images to the cloud.
