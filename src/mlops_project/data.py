@@ -202,7 +202,11 @@ def preprocess_hydra(config) -> None:
     output_folder = Path(get_original_cwd()) / config.output_dir
 
     loss_str = config.pairs.loss
-    loss = LossType.MultipleNegativesRankingLoss if loss_str == "MultipleNegativesRankingLoss" else LossType.ContrastiveLoss
+    loss = (
+        LossType.MultipleNegativesRankingLoss
+        if loss_str == "MultipleNegativesRankingLoss"
+        else LossType.ContrastiveLoss
+    )
 
     preprocess(
         loss=loss,
