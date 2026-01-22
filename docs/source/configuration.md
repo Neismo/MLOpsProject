@@ -3,10 +3,8 @@
 ## Config files
 Training and preprocessing use [Hydra](https://hydra.cc/docs/intro/) config files in `configs/`.
 
-Key files:
-- `configs/dataset.yaml`
-- `configs/train_config.yaml`
-- `configs/gpu_train_vertex.yaml` (Vertex AI custom job spec)
+Key files include `configs/dataset.yaml`, `configs/train_config.yaml`, and `configs/gpu_train_vertex.yaml` for
+the Vertex AI custom job spec.
 
 Dataset configuration:
 ```yaml

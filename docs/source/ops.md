@@ -1,9 +1,10 @@
 # MLOps stack
 
 ## Ops stack
-- Data versioning: [DVC](https://dvc.org/doc) tracks datasets, `data.dvc` pins state, and `.dvc/config` points to the GCS remote.
-- Experiment tracking: [Weights & Biases](https://docs.wandb.ai/) logging is controlled by `wandb.enabled` and can be disabled for offline runs or CI.
-- Containers: [Docker](https://docs.docker.com/) images in `dockerfiles/train.dockerfile` for training and `dockerfiles/api.dockerfile` for inference.
+[DVC](https://dvc.org/doc) tracks datasets, `data.dvc` pins state, and `.dvc/config` points to the GCS remote. Experiment
+tracking is handled through [Weights & Biases](https://docs.wandb.ai/) and controlled by `wandb.enabled`, which can be
+disabled for offline runs or CI. We ship [Docker](https://docs.docker.com/) images for training and inference using
+`dockerfiles/train.dockerfile` and `dockerfiles/api.dockerfile`.
 
 ## Automation and cloud
 [GitHub Actions](https://docs.github.com/actions) runs formatting, linting, type checking, and tests on every push to

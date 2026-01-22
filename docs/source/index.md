@@ -4,13 +4,12 @@ Fine tune [Sentence Transformers](https://www.sbert.net/) models on arXiv titles
 that cluster papers by primary subject and power similarity search.
 
 ## Project summary
-- Builds pair datasets from arXiv metadata for contrastive learning.
-- Fine tunes sentence transformer models with [Sentence Transformers](https://www.sbert.net/) trainers across multiple backbones.
-- Evaluates semantic retrieval and embedding-based classification with logistic regression and TF-IDF baselines using
-  [scikit-learn](https://scikit-learn.org/stable/).
-- Builds a [FAISS](https://faiss.ai/) similarity search index and supports [ONNX Runtime](https://onnxruntime.ai/docs/)
-  inference for faster serving.
-- Serves embeddings behind a [FastAPI](https://fastapi.tiangolo.com/) endpoint for downstream apps and retrieval services.
+We build pair datasets from arXiv metadata for contrastive learning, fine tune sentence transformer models with
+[Sentence Transformers](https://www.sbert.net/) across multiple backbones, and evaluate semantic retrieval alongside
+embedding-based classification using [scikit-learn](https://scikit-learn.org/stable/). The system builds a
+[FAISS](https://faiss.ai/) similarity search index, supports [ONNX Runtime](https://onnxruntime.ai/docs/) for faster
+inference paths, and serves embeddings behind a [FastAPI](https://fastapi.tiangolo.com/) endpoint for downstream
+apps and retrieval services.
 
 **Pipeline steps**
 1. Download and split the arXiv dataset into train, eval, and test sets.
@@ -29,8 +28,5 @@ uv run python src/mlops_project/train.py
 ```
 
 ## Key docs
-- [Data and preprocessing](data.md)
-- [Training](training.md)
-- [Evaluation](evaluation.md)
-- [API and deployment](api.md)
-- [Configuration](configuration.md)
+Start with [Data and preprocessing](data.md), then follow [Training](training.md) and [Evaluation](evaluation.md).
+Deployment details live in [API and deployment](api.md), and configuration lives in [Configuration](configuration.md).

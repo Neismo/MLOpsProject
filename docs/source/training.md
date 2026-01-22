@@ -12,13 +12,11 @@ Flow:
 5. Train with `SentenceTransformerTrainer` from
    [Sentence Transformers](https://www.sbert.net/docs/training/overview.html) and evaluate precision at k.
 
-Key configuration options:
-- `train.model`: base model (default `all-MiniLM-L6-v2`).
-- `train.loss`: `MultipleNegativesRankingLoss` or `ContrastiveLoss`.
-- `train.batch_size`, `train.epochs`, `train.warmup_ratio`, `train.seed`.
-- `meta.save_model`: toggle checkpoint saving.
-- `meta.use_gcs` and `meta.bucket_name`: load and save to GCS paths.
-- `wandb.enabled`: disable [Weights & Biases](https://docs.wandb.ai/) logging for offline runs.
+Key configuration options include `train.model` (default `all-MiniLM-L6-v2`), `train.loss` set to
+`MultipleNegativesRankingLoss` or `ContrastiveLoss`, and the usual training controls like `train.batch_size`,
+`train.epochs`, `train.warmup_ratio`, and `train.seed`. Use `meta.save_model` to toggle checkpoint saving, and
+`meta.use_gcs` plus `meta.bucket_name` to load and save to GCS paths. Disable
+[Weights & Biases](https://docs.wandb.ai/) logging with `wandb.enabled=false` for offline runs.
 
 ## Run training and outputs
 ```bash

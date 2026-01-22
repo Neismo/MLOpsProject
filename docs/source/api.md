@@ -13,8 +13,8 @@ flowchart LR
 ```
 
 **Endpoints**
-- `GET /health` returns service status and device.
-- `POST /embed` accepts `{ "abstract": "..." }` and returns embedding data.
+The API exposes `GET /health` for service status and device info, and `POST /embed` to accept
+`{ "abstract": "..." }` and return embedding data.
 
 **Request and response**
 Request body:

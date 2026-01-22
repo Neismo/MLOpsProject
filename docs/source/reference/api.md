@@ -5,18 +5,15 @@ The [FastAPI](https://fastapi.tiangolo.com/) app lives in `src/mlops_project/api
 That behavior is not friendly to auto documentation, so this module is documented manually.
 
 ## Entry points
-- CLI flag: `--model-path`
-- Environment: `MODEL_PATH`
-- Default: `models/contrastive-minilm/`
+The API reads configuration from the CLI flag `--model-path`, then falls back to the `MODEL_PATH` environment
+variable, and finally defaults to `models/contrastive-minilm/`.
 
 ## Endpoints
-- `GET /health` returns status and device.
-- `POST /embed` returns normalized embeddings for an abstract.
+The service exposes `GET /health` to report status and device, and `POST /embed` to return normalized embeddings
+for an abstract.
 
 ## Runtime notes
-- The model is loaded once on startup.
-- Embeddings are normalized to unit length.
-- GPU is used when available.
-- ONNX export and inference are supported via `mlops_project.model` and [ONNX Runtime](https://onnxruntime.ai/docs/).
+The model loads once on startup and normalizes embeddings to unit length. GPU is used when available. ONNX export
+and inference are supported via `mlops_project.model` and [ONNX Runtime](https://onnxruntime.ai/docs/).
 
 See [API and deployment](../api.md) for usage and deployment details.
