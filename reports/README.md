@@ -77,7 +77,7 @@ will check the repositories and the code to verify your answers.
 ### Week 2
 
 * [x] Write unit tests related to the data part of your code (M16)
-* [ ] Write unit tests related to model construction and or model training (M16)
+* [x] Write unit tests related to model construction and or model training (M16)
 * [x] Calculate the code coverage (M16)
 * [x] Get some continuous integration running on the GitHub repository (M17)
 * [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
@@ -87,13 +87,13 @@ will check the repositories and the code to verify your answers.
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19)
 * [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
 * [x] Create a trigger workflow for automatically building your docker images (M21)
-* [ ] Get your model training in GCP using either the Engine or Vertex AI (M21)
-* [ ] Create a FastAPI application that can do inference using your model (M22)
-* [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
-* [ ] Write API tests for your application and setup continues integration for these (M24)
+* [x] Get your model training in GCP using either the Engine or Vertex AI (M21)
+* [x] Create a FastAPI application that can do inference using your model (M22)
+* [x] Deploy your model in GCP using either Functions or Run as the backend (M23)
+* [x] Write API tests for your application and setup continues integration for these (M24)
 * [ ] Load test your application (M24)
-* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
-* [ ] Create a frontend for your API (M26)
+* [x] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+* [x] Create a frontend for your API (M26)
 
 ### Week 3
 
@@ -109,12 +109,12 @@ will check the repositories and the code to verify your answers.
 
 ### Extra
 
-* [ ] Write some documentation for your application (M32)
+* [x] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [x] Revisit your initial project description. Did the project turn out as you wanted?
 * [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
-* [ ] Uploaded all your code to GitHub
+* [x] Make sure all group members have an understanding about all parts of the project
+* [x] Uploaded all your code to GitHub
 
 ## Group information
 
@@ -314,7 +314,7 @@ To run simple processes like data preprocessing steps, we made use of `Typer`. I
 >
 > Answer:
 
-Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`.
+Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`. Tests were written to do check for it in the data generation.
 
 ### Question 14
 
@@ -393,7 +393,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
---- question 18 fill here ---
+We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to faciliate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`.
 
 ### Question 19
 
@@ -452,7 +452,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
---- question 23 fill here ---
+We have written and deployed an API for our embeddings model through the `Cloud Run` services. For this, FastAPI was used. We also have a simple front-end to go with it, to allow one to search for similar scientific papers based on abstracts. A list of the top 10 results will be shown, as can be seen here: ![image](figures/index.png). We have two endpoints, `POST /embed` and `POST /search`; the latter is used by the index page to emit a POST request and show the top 10 results. The first one is used to fetch the embedding for an abstract given by `{"abstract": ""}` post body.
 
 ### Question 24
 
@@ -468,7 +468,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
---- question 24 fill here ---
+We did a full deployment of our trained application as said above by the `Cloud Run` services. A local run was first performed by `s224233` to make sure it worked and was ready to be deployed. Afterwards, the image for serving it was pushed to the artifacts registry, after which a services was started from that image, allowing updates if updated images was pushed. To invoke the service, one would run `curl -X 'POST' 'https://faiss-api-94748064668.europe-north2.run.app/search' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"abstract": "some abstract here","k": k,"nprobe": 1}'` and you would get a `{[{"title", "abstract", "primary_subject", "subjects", "arxiv_id"}] * k}` based on similarity scores.
 
 ### Question 25
 
@@ -483,7 +483,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
---- question 25 fill here ---
+We did not perform any load testing for the API. Load testing, however, is important for all APIs, but especially public ones. An approach to load testing would for example be the framework `locust`. The `locust` framework that allows one to send many requests simultaneously and keep the connections open for specified amount of time. This "blocks" other connections and can make the API very annoying to use for other users. This highlights areas of interest to keep the API responsive and fast, for example making limits on how long a connection can stay open, or how long between data transfers (see [slowloris attacks](https://www.cloudflare.com/learning/ddos/ddos-attack-tools/slowloris/)) amongst others.
 
 ### Question 26
 
@@ -564,7 +564,7 @@ An overview of the architecture of our system can be seen here: ![here](figures/
 >
 > Answer:
 
---- question 30 fill here ---
+Most of the frustratings came with working with Google Cloud. The cloud interfacing was slow and annoying, different parts failed at different times, usually after a long wait. This meant a lot of time was spent waiting for failure/success. Permissions was a bit annoying as well, albeit easily passed if `owner` role was given out freely.
 
 ### Question 31
 
