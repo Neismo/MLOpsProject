@@ -33,6 +33,7 @@ dependencies = [
     "uvicorn[standard]==0.40.0",
     "wandb>=0.23.1",
     "requests>=2.32.5",
+    "invoke>=2.2.1",
 ]
 
 [dependency-groups]
