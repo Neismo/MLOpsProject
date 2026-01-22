@@ -8,6 +8,7 @@ from enum import Enum
 import hydra
 from hydra.utils import get_original_cwd
 from loguru import logger
+from omegaconf import OmegaConf
 
 
 class LossType(str, Enum):
@@ -34,13 +35,19 @@ class ArxivPapersDataset:
         return self.dataset[index]
 
 
-def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42):
+def create_contrastive_pairs(
+    dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42, balanced: bool = True
+):
     """
-    Create balanced positive and negative pairs for ContrastiveLoss.
+    Create positive and negative pairs for ContrastiveLoss.
 
     Returns a dataset with columns: sentence1, sentence2, label
     - label=1.0 for positive pairs (same subject)
     - label=0.0 for negative pairs (different subjects)
+
+    Args:
+        balanced: If True, each subject has equal probability of being chosen.
+                  If False, subjects are weighted by their frequency in the dataset.
     """
     random.seed(seed)
     np.random.seed(seed)
@@ -49,16 +56,20 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
     for idx, subject in enumerate(dataset["primary_subject"]):
         subject_to_indices[subject].append(idx)
 
-    subjects = list(subject_to_indices.keys())
-    logger.info(f"Found {len(subjects)} unique subjects")
+    subjects = [s for s in subject_to_indices.keys() if len(subject_to_indices[s]) >= 2]
+    subject_weights = [len(subject_to_indices[s]) for s in subjects]
+    logger.info(f"Found {len(subjects)} subjects with 2+ samples")
 
     pairs: dict[str, list[str | float]] = {"sentence1": [], "sentence2": [], "label": []}
     num_positive = num_pairs // 2
     num_negative = num_pairs - num_positive
 
-    logger.info(f"Creating {num_positive} positive pairs...")
+    logger.info(f"Creating {num_positive} positive pairs (balanced={balanced})...")
     for _ in range(num_positive):
-        subject = random.choice([s for s in subjects if len(subject_to_indices[s]) >= 2])
+        if balanced:
+            subject = random.choice(subjects)
+        else:
+            subject = random.choices(subjects, weights=subject_weights, k=1)[0]
         idx1, idx2 = random.sample(subject_to_indices[subject], 2)
         pairs["sentence1"].append(dataset[idx1][text_field])
         pairs["sentence2"].append(dataset[idx2][text_field])
@@ -76,13 +87,19 @@ def create_contrastive_pairs(dataset, num_pairs: int = 100000, text_field: str =
     return Dataset.from_dict(pairs)
 
 
-def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42):
+def create_positive_pairs(
+    dataset, num_pairs: int = 100000, text_field: str = "abstract", seed: int = 42, balanced: bool = True
+):
     """
     Create positive pairs for MultipleNegativesRankingLoss.
 
     Returns a dataset with columns: anchor, positive
     Each pair contains two abstracts from papers with the same primary_subject.
     MNRL will use in-batch negatives automatically.
+
+    Args:
+        balanced: If True, each subject has equal probability of being chosen.
+                  If False, subjects are weighted by their frequency in the dataset.
     """
     random.seed(seed)
     np.random.seed(seed)
@@ -92,13 +109,17 @@ def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "a
         subject_to_indices[subject].append(idx)
 
     subjects = [s for s in subject_to_indices.keys() if len(subject_to_indices[s]) >= 2]
+    subject_weights = [len(subject_to_indices[s]) for s in subjects]
     logger.info(f"Found {len(subjects)} subjects with 2+ samples")
 
     pairs: dict[str, list[str]] = {"anchor": [], "positive": []}
 
-    logger.info(f"Creating {num_pairs} positive pairs...")
+    logger.info(f"Creating {num_pairs} positive pairs (balanced={balanced})...")
     for _ in range(num_pairs):
-        subject = random.choice(subjects)
+        if balanced:
+            subject = random.choice(subjects)
+        else:
+            subject = random.choices(subjects, weights=subject_weights, k=1)[0]
         idx1, idx2 = random.sample(subject_to_indices[subject], 2)
         pairs["anchor"].append(dataset[idx1][text_field])
         pairs["positive"].append(dataset[idx2][text_field])
@@ -107,10 +128,16 @@ def create_positive_pairs(dataset, num_pairs: int = 100000, text_field: str = "a
 
 
 def create_pairs(
-    dataset, pair_fn: typing.Callable, save_path: Path, num_pairs: int, text_field: str = "abstract", seed: int = 42
+    dataset,
+    pair_fn: typing.Callable,
+    save_path: Path,
+    num_pairs: int,
+    text_field: str = "abstract",
+    seed: int = 42,
+    balanced: bool = True,
 ) -> Dataset:
     """Create and save pairs to disk."""
-    pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed)
+    pairs = pair_fn(dataset, num_pairs=num_pairs, text_field=text_field, seed=seed, balanced=balanced)
     pairs.save_to_disk(str(save_path))
     return pairs
 
@@ -128,10 +155,12 @@ def preprocess(
     output_folder: Path = Path("data"),
     test_size: float = 0.2,
     number_of_pairs: int = 1_000_000,
+    number_of_eval_pairs: int = 10_000,
     seed: int = 42,
     source: str = "nick007x/arxiv-papers",
     columns: list[str] | None = None,
     text_field: str = "abstract",
+    balanced: bool = True,
 ) -> None:
     """Download and preprocess the arxiv papers dataset."""
     if columns is None:
@@ -182,16 +211,33 @@ def preprocess(
         num_pairs=number_of_pairs,
         text_field=text_field,
         seed=seed,
+        balanced=balanced,
     )
 
     create_pairs(
         dataset=eval_dataset,
         pair_fn=pair_fn,
         save_path=output_folder / "eval_pairs",
-        num_pairs=number_of_pairs // 100,
+        num_pairs=number_of_eval_pairs,
         text_field=text_field,
         seed=seed,
+        balanced=balanced,
     )
+
+    # Save config used for preprocessing
+    used_config = {
+        "loss": loss.value,
+        "test_size": test_size,
+        "number_of_pairs": number_of_pairs,
+        "number_of_eval_pairs": number_of_eval_pairs,
+        "seed": seed,
+        "source": source,
+        "columns": columns,
+        "text_field": text_field,
+        "balanced": balanced,
+    }
+    OmegaConf.save(OmegaConf.create(used_config), output_folder / "preprocess_config.yaml")
+    logger.info(f"Saved preprocessing config to {output_folder / 'preprocess_config.yaml'}")
 
     logger.info("Done!")
 
@@ -213,10 +259,72 @@ def preprocess_hydra(config) -> None:
         output_folder=output_folder,
         test_size=config.splits.test_size,
         number_of_pairs=config.pairs.num_train,
+        number_of_eval_pairs=config.pairs.num_eval,
         seed=config.splits.seed,
         source=config.source,
         columns=list(config.columns),
         text_field=config.pairs.text_field,
+        balanced=config.pairs.balanced,
+    )
+
+
+def _build_config_dict(dataset_config) -> dict:
+    """Build a config dict from dataset config for comparison."""
+    return {
+        "loss": dataset_config.pairs.loss,
+        "test_size": dataset_config.splits.test_size,
+        "number_of_pairs": dataset_config.pairs.num_train,
+        "number_of_eval_pairs": dataset_config.pairs.num_eval,
+        "seed": dataset_config.splits.seed,
+        "source": dataset_config.source,
+        "columns": list(dataset_config.columns),
+        "text_field": dataset_config.pairs.text_field,
+        "balanced": dataset_config.pairs.balanced,
+    }
+
+
+def ensure_data_exists(data_dir: Path) -> None:
+    """Run preprocessing if required data doesn't exist or config has changed."""
+    train_pairs_path = data_dir / "train_pairs"
+    eval_pairs_path = data_dir / "eval_pairs"
+    test_path = data_dir / "test"
+    saved_config_path = data_dir / "preprocess_config.yaml"
+
+    config_path = Path(__file__).parent.parent.parent / "configs" / "dataset.yaml"
+    dataset_config = OmegaConf.load(config_path)
+    current_config = _build_config_dict(dataset_config)
+
+    # Check if data exists and config matches
+    if train_pairs_path.exists() and eval_pairs_path.exists() and test_path.exists():
+        if saved_config_path.exists():
+            saved_config = OmegaConf.to_container(OmegaConf.load(saved_config_path))
+            if saved_config == current_config:
+                logger.info("Data already exists with matching config, skipping preprocessing.")
+                return
+            logger.info("Config has changed, re-running preprocessing...")
+        else:
+            logger.info("No saved config found, re-running preprocessing to ensure consistency...")
+    else:
+        logger.info("Data not found, running preprocessing...")
+
+    loss_str = dataset_config.pairs.loss
+    loss = (
+        LossType.MultipleNegativesRankingLoss
+        if loss_str == "MultipleNegativesRankingLoss"
+        else LossType.ContrastiveLoss
+    )
+
+    preprocess(
+        loss=loss,
+        output_folder=data_dir,
+        test_size=dataset_config.splits.test_size,
+        number_of_pairs=dataset_config.pairs.num_train,
+        number_of_eval_pairs=dataset_config.pairs.num_eval,
+        seed=dataset_config.splits.seed,
+        source=dataset_config.source,
+        columns=list(dataset_config.columns),
+        text_field=dataset_config.pairs.text_field,
+        balanced=dataset_config.pairs.balanced,
     )
 
 
