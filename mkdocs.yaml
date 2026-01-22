@@ -1,23 +1,84 @@
-site_name: mlops_project
+site_name: MLOps Project
 site_author: DeepBois
-docs_dir: source
+site_description: Contrastive embeddings for arXiv papers with an end to end MLOps pipeline.
+docs_dir: docs/source
 
 theme:
-  language: en
   name: material
+  language: en
+  font:
+    text: Space Grotesk
+    code: IBM Plex Mono
+  palette:
+    - scheme: slate
+      primary: blue grey
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: blue grey
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
   features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.tabs.link
 
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
+          paths:
+            - src
           options:
             show_root_heading: true
             separate_signature: true
             show_signature_annotations: true
+            show_source: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md
+  - Guide:
+      - Quickstart: quickstart.md
+      - Overview: overview.md
+      - Data and Preprocessing: data.md
+      - Training: training.md
+      - Evaluation: evaluation.md
+      - API and Deployment: api.md
+  - Ops:
+      - Configuration: configuration.md
+      - MLOps Stack: ops.md
+  - Reference:
+      - Project Structure: project-structure.md
+      - Python API: reference.md
