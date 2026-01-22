@@ -2,31 +2,27 @@
 
 ## Setup and data
 This repository uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for package and project management.
-
-**Install dependencies**
+Start by syncing dependencies:
 ```bash
 uv sync --dev
 ```
 
-**Preprocess data**
+Then preprocess the data to create dataset splits and pair datasets under `data/`:
 ```bash
 uv run python src/mlops_project/data.py
 ```
 
-This writes the dataset splits and pair datasets under `data/`.
-
 ## Train and serve
-**Train a model**
+Train a model with the default config:
 ```bash
 uv run python src/mlops_project/train.py
 ```
 
-To run on CPU or tweak a parameter:
+If you want to run on CPU or tweak a parameter, override the config on the CLI:
 ```bash
 uv run python src/mlops_project/train.py meta.require_cuda=false train.batch_size=64 train.epochs=1
 ```
 
-**Run the embedding API**
 Run the embedding API with [Uvicorn](https://www.uvicorn.org/) serving [FastAPI](https://fastapi.tiangolo.com/):
 ```bash
 MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops_project.api:app \
@@ -34,13 +30,11 @@ MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops
 ```
 
 ## Validate and iterate
-**Run tests**
 Run the test suite with [pytest](https://docs.pytest.org/):
 ```bash
 uv run pytest tests/
 ```
 
-**Serve docs**
 Serve docs locally with [MkDocs](https://www.mkdocs.org/):
 ```bash
 uv run mkdocs serve -f mkdocs.yaml

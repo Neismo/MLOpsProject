@@ -4,20 +4,14 @@ Fine tune [Sentence Transformers](https://www.sbert.net/) models on arXiv titles
 that cluster papers by primary subject and power similarity search.
 
 ## Project summary
-We build pair datasets from arXiv metadata for contrastive learning, fine tune sentence transformer models with
-[Sentence Transformers](https://www.sbert.net/) across multiple backbones, and evaluate semantic retrieval alongside
-embedding-based classification using [scikit-learn](https://scikit-learn.org/stable/). The system builds a
+We build pair datasets from arXiv metadata for contrastive learning, fine tune sentence transformer models across
+multiple backbones, and evaluate semantic retrieval alongside embedding-based classification. The system builds a
 [FAISS](https://faiss.ai/) similarity search index, supports [ONNX Runtime](https://onnxruntime.ai/docs/) for faster
-inference paths, and serves embeddings behind a [FastAPI](https://fastapi.tiangolo.com/) endpoint for downstream
-apps and retrieval services.
+inference paths, and serves embeddings behind a FastAPI endpoint for downstream apps and retrieval services.
 
-**Pipeline steps**
-1. Download and split the arXiv dataset into train, eval, and test sets.
-2. Build positive or contrastive pairs based on primary subject labels.
-3. Train sentence transformers with the chosen contrastive objective and model backbone.
-4. Evaluate retrieval quality with precision at 1, 5, and 10, plus classifier metrics.
-5. Compare to TF-IDF baselines with [scikit-learn](https://scikit-learn.org/stable/) and export models to ONNX.
-6. Build a [FAISS](https://faiss.ai/) similarity search index and deploy the embedding API for downstream use.
+The pipeline starts by downloading and splitting the arXiv dataset, then builds contrastive pairs from primary
+subjects. We train sentence transformers with the selected loss, evaluate precision@k alongside classifier metrics,
+compare TF-IDF baselines, export ONNX models, and build a FAISS index before serving embeddings through the API.
 
 ## Get started
 This repository uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for package and project management.

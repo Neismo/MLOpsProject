@@ -1,4 +1,5 @@
 # Evaluation
+This page summarizes how we evaluate retrieval, classification, baselines, and similarity search.
 
 ## Retrieval metrics
 Evaluation uses `InformationRetrievalEvaluator` with precision at k (1, 5, 10). The evaluator samples a subset of the

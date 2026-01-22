@@ -1,4 +1,5 @@
 # MLOps stack
+This page covers the data, experiment, and deployment tooling that keeps the project reproducible.
 
 ## Ops stack
 [DVC](https://dvc.org/doc) tracks datasets, `data.dvc` pins state, and `.dvc/config` points to the GCS remote. Experiment

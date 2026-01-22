@@ -6,7 +6,7 @@ Training and preprocessing use [Hydra](https://hydra.cc/docs/intro/) config file
 Key files include `configs/dataset.yaml`, `configs/train_config.yaml`, and `configs/gpu_train_vertex.yaml` for
 the Vertex AI custom job spec.
 
-Dataset configuration:
+Here is a typical dataset configuration:
 ```yaml
 # configs/dataset.yaml
 source: nick007x/arxiv-papers
@@ -21,7 +21,7 @@ pairs:
   text_field: abstract
 ```
 
-Training configuration:
+And here is a typical training configuration:
 ```yaml
 # configs/train_config.yaml
 meta:

@@ -1,4 +1,5 @@
 # Data and preprocessing
+This page explains the dataset fields, split strategy, and pair generation used in training.
 
 ## Dataset and splits
 The project uses the Hugging Face dataset [`nick007x/arxiv-papers`](https://huggingface.co/datasets/nick007x/arxiv-papers)
@@ -15,6 +16,7 @@ anchor/positive pairs, and `create_contrastive_pairs` for `ContrastiveLoss` with
 The `balanced` flag controls whether subjects are sampled uniformly or weighted by frequency.
 
 ## Preprocessing flow
+The diagram below shows how the raw dataset becomes saved splits and pair datasets.
 ```mermaid
 flowchart TD
   A[Load dataset] --> B[Select columns]

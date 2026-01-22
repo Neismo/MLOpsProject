@@ -4,13 +4,9 @@
 Training runs from `src/mlops_project/train.py` and is configured via [Hydra](https://hydra.cc/docs/intro/) using
 `configs/train_config.yaml`.
 
-Flow:
-1. Validate CUDA availability when `meta.require_cuda=true`.
-2. Ensure data exists (preprocess if needed).
-3. Load training and evaluation pairs.
-4. Instantiate the [SentenceTransformer](https://www.sbert.net/) model.
-5. Train with `SentenceTransformerTrainer` from
-   [Sentence Transformers](https://www.sbert.net/docs/training/overview.html) and evaluate precision at k.
+The training run validates CUDA availability when `meta.require_cuda=true`, ensures the dataset and pairs exist (and
+preprocesses if needed), loads training and evaluation pairs, instantiates the SentenceTransformer model, and then
+trains with `SentenceTransformerTrainer` while evaluating precision@k during training.
 
 Key configuration options include `train.model` (default `all-MiniLM-L6-v2`), `train.loss` set to
 `MultipleNegativesRankingLoss` or `ContrastiveLoss`, and the usual training controls like `train.batch_size`,
@@ -28,7 +24,7 @@ Override parameters:
 uv run python src/mlops_project/train.py train.loss=ContrastiveLoss train.epochs=3 wandb.enabled=false
 ```
 
-**Docker + CUDA**
+## Docker + CUDA
 Requires [Docker](https://docs.docker.com/) with NVIDIA GPU support.
 
 Build the CUDA training image:
