@@ -2,6 +2,9 @@ site_name: MLOps Project
 site_author: DeepBois
 site_description: Contrastive embeddings for arXiv papers with an end to end MLOps pipeline.
 docs_dir: docs/source
+repo_url: https://github.com/Neismo/MLOpsProject
+repo_name: Neismo/MLOpsProject
+edit_uri: https://raw.githubusercontent.com/Neismo/MLOpsProject/master/docs/source/
 
 theme:
   name: material
@@ -26,16 +29,25 @@ theme:
     - navigation.instant
     - navigation.instant.progress
     - navigation.sections
+    - navigation.footer
     - navigation.top
     - navigation.tracking
+    - toc.integrate
+    - content.action.view
     - search.suggest
-    - search.highlight
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
 
 plugins:
   - search
+  - tags:
+      tags_file: tags.md
+  - git-revision-date-localized:
+      type: timeago
+      fallback_to_build_date: true
+  - minify:
+      minify_html: true
   - mkdocstrings:
       handlers:
         python:
@@ -55,6 +67,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+      toc_depth: 2-2
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tabbed:
@@ -68,8 +81,8 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Home: index.md
-  - Guide:
+  - Project:
+      - Home: index.md
       - Quickstart: quickstart.md
       - Overview: overview.md
       - Data and Preprocessing: data.md
@@ -82,3 +95,5 @@ nav:
   - Reference:
       - Project Structure: project-structure.md
       - Python API: reference.md
+      - API Module Notes: reference/api.md
+      - Tags: tags.md

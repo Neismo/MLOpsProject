@@ -1,6 +1,6 @@
 # Configuration
 
-## Hydra config layout
+## Config files
 Training and preprocessing use Hydra config files in `configs/`.
 
 Key files:
@@ -8,7 +8,7 @@ Key files:
 - `configs/train_config.yaml`
 - `configs/gpu_train_vertex.yaml` (Vertex AI custom job spec)
 
-## Dataset configuration
+Dataset configuration:
 ```yaml
 # configs/dataset.yaml
 source: nick007x/arxiv-papers
@@ -23,7 +23,7 @@ pairs:
   text_field: abstract
 ```
 
-## Training configuration
+Training configuration:
 ```yaml
 # configs/train_config.yaml
 meta:

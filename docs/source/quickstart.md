@@ -1,18 +1,20 @@
 # Quickstart
 
-## Install dependencies
+## Setup and data
+**Install dependencies**
 ```bash
 uv sync --dev
 ```
 
-## Preprocess data
+**Preprocess data**
 ```bash
 uv run inv preprocess
 ```
 
 This writes the dataset splits and pair datasets under `data/`.
 
-## Train a model
+## Train and serve
+**Train a model**
 ```bash
 uv run inv train
 ```
@@ -22,26 +24,19 @@ To run on CPU or tweak a parameter:
 uv run python src/mlops_project/train.py meta.require_cuda=false train.batch_size=64 train.epochs=1
 ```
 
-## Run the embedding API
+**Run the embedding API**
 ```bash
 MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops_project.api:app \
   --host 0.0.0.0 --port 8000
 ```
 
-## Run tests
+## Validate and iterate
+**Run tests**
 ```bash
 uv run inv test
 ```
 
-## Serve docs
+**Serve docs**
 ```bash
 uv run mkdocs serve -f mkdocs.yaml
 ```
-
-## On this page
-- [Install dependencies](#install-dependencies)
-- [Preprocess data](#preprocess-data)
-- [Train a model](#train-a-model)
-- [Run the embedding API](#run-the-embedding-api)
-- [Run tests](#run-tests)
-- [Serve docs](#serve-docs)

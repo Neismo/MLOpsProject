@@ -1,11 +1,24 @@
 # API and deployment
 
-## FastAPI service
+## Service usage
 The API serves normalized embeddings for abstracts.
 
-Endpoints:
+**Endpoints**
 - `GET /health` returns service status and device.
 - `POST /embed` accepts `{ "abstract": "..." }` and returns embedding data.
+
+**Request and response**
+Request body:
+```json
+{ "abstract": "..." }
+```
+
+Response body:
+```json
+{ "embedding_dim": 384, "embedding": [0.01, 0.02] }
+```
+
+Empty or whitespace abstracts return `400`, and missing fields return `422`.
 
 Example request:
 ```bash
@@ -14,17 +27,33 @@ curl -X POST http://localhost:8000/embed \
   -d "{\"abstract\": \"Graph neural networks for molecule property prediction.\"}"
 ```
 
-## Running locally
-The API loads a model from `MODEL_PATH` or defaults to `models/contrastive-minilm/`.
+**Model loading**
+The API loads a model from `--model-path`, then `MODEL_PATH`, and falls back to `models/contrastive-minilm/`.
+The model directory must exist and contain a SentenceTransformer model. GPU is used when available.
+
+**Run locally**
 ```bash
 MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops_project.api:app \
   --host 0.0.0.0 --port 8000
 ```
-The model directory must exist and contain a SentenceTransformer model. GPU is used when available.
 
-## Docker image
+## Deployment and containers
+**Docker image**
 Build and run the inference container:
 ```bash
 docker build -f dockerfiles/api.dockerfile -t mlops-api:latest .
-docker run --rm -p 8000:8000 -e MODEL_PATH=/app/models/contrastive-minilm mlops-api:latest
+docker run --rm -p 8000:8000 \
+  -v ${PWD}/models:/app/models \
+  -e MODEL_PATH=/app/models/all-MiniLM-L6-v2-mnrl-100k-balanced \
+  mlops-api:latest
 ```
+
+**GPU notes**
+If you run on Linux with NVIDIA drivers, add `--gpus all` to the container run command.
+
+**Deployment pipeline**
+Cloud Build (`cloudbuild.yaml`) publishes the training image on the `build` branch after CI checks pass.
+The API image is built locally from `dockerfiles/api.dockerfile` unless you add a dedicated CI workflow.
+
+**ONNX runtime**
+An ONNX loader exists in `mlops_project.model`, but the API currently uses SentenceTransformer directly.

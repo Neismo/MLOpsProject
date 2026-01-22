@@ -42,6 +42,8 @@ dev = [
     "invoke==2.2.1",
     "mkdocs-material==9.7.1",
     "mkdocs==1.6.1",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.0",
+    "mkdocs-minify-plugin>=0.7.1",
     "pre-commit==4.5.1",
     "pytest==9.0.2",
     "mkdocstrings-python==2.0.1",

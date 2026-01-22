@@ -6,7 +6,6 @@ Evaluation uses `InformationRetrievalEvaluator` with precision at k (1, 5, 10). 
 - Uses 20 percent of samples as queries and the rest as corpus.
 - Computes precision at k on subject aligned relevance sets.
 
-## During training
 Training evaluates every 500 steps and logs metrics to stdout and W&B when enabled.
 
 ## Custom evaluation
