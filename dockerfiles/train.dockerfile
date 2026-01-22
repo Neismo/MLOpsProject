@@ -21,8 +21,5 @@ COPY src/ src/
 # Layer 3: Copy configs (needed for Hydra)
 COPY configs/ configs/
 
-# copy readme
-COPY README.md .
-
 # Entrypoint
 CMD ["uv", "run", "python", "src/mlops_project/train.py"]
