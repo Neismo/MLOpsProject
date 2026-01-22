@@ -8,7 +8,7 @@ from enum import Enum
 import hydra
 from hydra.utils import get_original_cwd
 from loguru import logger
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, OmegaConf
 
 
 class LossType(str, Enum):
@@ -290,15 +290,17 @@ def _build_config_dict(dataset_config) -> dict:
     }
 
 
-def ensure_data_exists(data_dir: Path) -> None:
+def ensure_data_exists(data_dir: Path, dataset_config: DictConfig | None = None) -> None:
     """Run preprocessing if required data doesn't exist or config has changed."""
     train_pairs_path = data_dir / "train_pairs"
     eval_pairs_path = data_dir / "eval_pairs"
     test_path = data_dir / "test"
     saved_config_path = data_dir / "preprocess_config.yaml"
 
-    config_path = Path(__file__).parent.parent.parent / "configs" / "dataset.yaml"
-    dataset_config = OmegaConf.load(config_path)
+    if dataset_config is None:
+        config_path = Path(__file__).parent.parent.parent / "configs" / "dataset.yaml"
+        dataset_config = OmegaConf.load(config_path)
+
     current_config = _build_config_dict(dataset_config)
 
     # Check if data exists and config matches

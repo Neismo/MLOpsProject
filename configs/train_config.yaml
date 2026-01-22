@@ -1,3 +1,7 @@
+defaults:
+  - dataset
+  - _self_
+
 meta:
   save_model: true
   use_gcs: false

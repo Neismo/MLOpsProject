@@ -5,7 +5,6 @@ import hydra
 import torch
 from hydra.utils import get_original_cwd
 from loguru import logger
-from omegaconf import OmegaConf
 from sentence_transformers import SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 from sentence_transformers.losses import ContrastiveLoss, MultipleNegativesRankingLoss
 
@@ -32,10 +31,7 @@ def train(config):
         logger.warning("CUDA not available. Continuing on CPU.")
 
     data_dir = Path(f"{get_original_cwd()}/data")
-    ensure_data_exists(data_dir)
-
-    # Load dataset config for output dir naming
-    dataset_config = OmegaConf.load(Path(__file__).parent.parent.parent / "configs" / "dataset.yaml")
+    ensure_data_exists(data_dir, config)
 
     test_dataset = ArxivPapersDataset("test", data_dir=data_dir).dataset
     model = get_model(model_name=config.train.model, cache_dir=f"{get_original_cwd()}/models/cache/")
@@ -67,7 +63,7 @@ def train(config):
         model=config.train.model,
         loss=config.train.loss,
         num_pairs=len(train_pairs),
-        balanced=dataset_config.pairs.balanced,
+        balanced=config.pairs.balanced,
     )
 
     # Define training arguments
