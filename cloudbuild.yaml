@@ -1,31 +1,9 @@
 steps:
-  - name: "gcr.io/cloud-builders/docker"
-    id: "Build training container image"
-    args:
-      [
-        "build",
-        ".",
-        "-t",
-        "europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-train:cuda",
-        "-f",
-        "dockerfiles/train.dockerfile",
-      ]
-
-  - name: "gcr.io/cloud-builders/docker"
-    id: "Build GCS mount test image"
-    args:
-      [
-        "build",
-        ".",
-        "-t",
-        "europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-gcs-test:latest",
-        "-f",
-        "dockerfiles/test.dockerfile",
-      ]
-
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Build container image'
+  args: [
+    'build', '.', '-t','europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-train:cuda','-f','dockerfiles/train.dockerfile']
 images:
-  - "europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-train:cuda"
-  - "europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-gcs-test:latest"
-
+- 'europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-registry/mlops-train:cuda'
 options:
   logging: CLOUD_LOGGING_ONLY

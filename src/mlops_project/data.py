@@ -292,6 +292,9 @@ def _build_config_dict(dataset_config: DictConfig | ListConfig) -> dict:
 
 def ensure_data_exists(data_dir: Path, dataset_config: DictConfig | ListConfig | None = None) -> None:
     """Run preprocessing if required data doesn't exist or config has changed."""
+
+    logger.info(f"Ensuring data exists at {data_dir}...")
+
     train_pairs_path = data_dir / "train_pairs"
     eval_pairs_path = data_dir / "eval_pairs"
     test_path = data_dir / "test"
