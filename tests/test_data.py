@@ -286,7 +286,12 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
 
     # Run preprocess with the specified loss type
     mlops_project.data.preprocess(
-        loss=loss_type, output_folder=output_folder, test_size=test_size, number_of_pairs=num_pairs, seed=seed
+        loss=loss_type,
+        output_folder=output_folder,
+        test_size=test_size,
+        number_of_pairs=num_pairs,
+        number_of_eval_pairs=num_pairs // 100,
+        seed=seed,
     )
 
     # Verify that load_dataset was called

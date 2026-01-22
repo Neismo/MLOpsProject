@@ -61,8 +61,15 @@ def create_contrastive_pairs(
     logger.info(f"Found {len(subjects)} subjects with 2+ samples")
 
     pairs: dict[str, list[str | float]] = {"sentence1": [], "sentence2": [], "label": []}
-    num_positive = num_pairs // 2
-    num_negative = num_pairs - num_positive
+
+    # Need at least 2 subjects to create negative pairs
+    if len(subjects) < 2:
+        num_positive = num_pairs
+        num_negative = 0
+        logger.warning(f"Only {len(subjects)} subjects with 2+ samples, creating only positive pairs")
+    else:
+        num_positive = num_pairs // 2
+        num_negative = num_pairs - num_positive
 
     logger.info(f"Creating {num_positive} positive pairs (balanced={balanced})...")
     for _ in range(num_positive):
