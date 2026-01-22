@@ -75,7 +75,7 @@ def train(config):
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=f"{output_dir/models/{output_dir_name}",
+        output_dir=f"{output_dir}/models/{output_dir_name}",
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
