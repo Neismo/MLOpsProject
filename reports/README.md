@@ -331,7 +331,7 @@ Reproducibility of experiments is indeed an important part. We introduced seeded
 >
 > Answer:
 
---- question 14 fill here ---
+![wandb](figures/wandb.png)
 
 ### Question 15
 
@@ -402,7 +402,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-[Bucket example here](figures/bucket.png)
+![Bucket example here](figures/bucket.png)
 
 ### Question 20
 
@@ -411,7 +411,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-[Artifact registry example here](figures/registry.png)
+![Artifact registry example here](figures/registry.png)
 
 ### Question 21
 
@@ -420,7 +420,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-[Cloud build example here](figures/build.png)
+![Cloud build example here](figures/build.png)
 
 ### Question 22
 
@@ -550,7 +550,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-An overview of the architecture of our system can be seen [here](figures/overview.png)
+An overview of the architecture of our system can be seen here: ![here](figures/overview.png)
 
 ### Question 30
 
