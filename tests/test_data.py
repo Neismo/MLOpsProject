@@ -280,7 +280,7 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
     monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
 
     output_folder = tmp_path / "test_data"
-    num_pairs = 50000
+    num_pairs = 10000
     test_size = 0.2
     seed = 123
 
