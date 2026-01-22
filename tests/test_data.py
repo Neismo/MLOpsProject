@@ -299,12 +299,11 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
     assert (output_folder / "test").exists()
     assert (output_folder / "train_pairs").exists()
     assert (output_folder / "eval_pairs").exists()
-    assert (output_folder / "test_pairs").exists()
+    # Note: test_pairs is not created - test split is used raw for evaluation
 
     # Load and verify the splits
     train_split = mlops_project.data.load_pairs(output_folder / "train_pairs")
     eval_split = mlops_project.data.load_pairs(output_folder / "eval_pairs")
-    test_split = mlops_project.data.load_pairs(output_folder / "test_pairs")
 
     # Verify train_pairs has the correct structure
     for col in expected_columns:
@@ -313,9 +312,6 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
 
     # Verify eval_pairs has the expected number (num_pairs // 100)
     assert len(eval_split) == num_pairs // 100
-
-    # Verify test_pairs has the expected number (num_pairs // 100)
-    assert len(test_split) == num_pairs // 100
 
     # Additional validation for ContrastiveLoss
     if loss_type == mlops_project.data.LossType.ContrastiveLoss:
