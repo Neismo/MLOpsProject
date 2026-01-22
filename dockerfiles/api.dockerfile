@@ -15,7 +15,7 @@ RUN sed -i "s/sys_platform == 'linux' or sys_platform == 'win32'/sys_platform ==
 COPY faiss-endpoint/model /data/model
 COPY faiss-endpoint/index /data/index
 
-# Environment variables for model and index paths
+# Environment variables
 ENV MODEL_PATH=/data/model
 ENV INDEX_PATH=/data/index
 ENV PORT=8000

@@ -2,6 +2,7 @@
 
 import json
 import sqlite3
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -109,39 +110,16 @@ class FAISSIndex:
         self.index.nprobe = self.nprobe
 
         # Search
+        t0 = time.perf_counter()
         scores, indices = self.index.search(query_embedding, k)
+        t1 = time.perf_counter()
+        logger.info(f"FAISS search took {(t1 - t0) * 1000:.2f}ms")
 
-        valid_indices = [int(idx) for idx in indices[0] if idx != -1]
+        results = []
 
-        # Fetch metadata from SQLite if available, otherwise use in-memory list
-        if self.db_path and self.db_path.exists() and valid_indices:
-            conn = sqlite3.connect(self.db_path)
-            placeholders = ",".join("?" * len(valid_indices))
-            cur = conn.execute(
-                f"SELECT id, title, abstract, primary_subject, subjects, arxiv_id FROM papers WHERE id IN ({placeholders})",
-                valid_indices,
-            )
-            db_results = {row[0]: row[1:] for row in cur.fetchall()}
-            conn.close()
-
-            results = []
-            for score, idx in zip(scores[0], indices[0]):
-                if idx == -1 or idx not in db_results:
-                    continue
-                title, abstract, primary_subject, subjects, arxiv_id = db_results[idx]
-                subjects_list = subjects.split("; ") if subjects else []
-                results.append(
-                    SearchResult(
-                        score=float(score),
-                        title=title,
-                        abstract=abstract,
-                        primary_subject=primary_subject,
-                        subjects=subjects_list,
-                        arxiv_id=arxiv_id,
-                    )
-                )
-        else:
-            results = []
+        t2 = time.perf_counter()
+        if self.metadata:
+            # Use in-memory metadata list
             for score, idx in zip(scores[0], indices[0]):
                 if idx == -1:
                     continue
@@ -153,9 +131,38 @@ class FAISSIndex:
                         abstract=meta["abstract"],
                         primary_subject=meta["primary_subject"],
                         subjects=meta.get("subjects", []),
-                        arxiv_id=None,
+                        arxiv_id=meta.get("arxiv_id"),
                     )
                 )
+        elif self.db_path:
+            # Query SQLite for metadata
+            conn = sqlite3.connect(self.db_path)
+            for score, idx in zip(scores[0], indices[0]):
+                if idx == -1:
+                    continue
+                cur = conn.execute(
+                    "SELECT title, abstract, primary_subject, subjects, arxiv_id FROM papers WHERE id = ?",
+                    (int(idx),),
+                )
+                row = cur.fetchone()
+                if row:
+                    title, abstract, primary_subject, subjects, arxiv_id = row
+                    results.append(
+                        SearchResult(
+                            score=float(score),
+                            title=title,
+                            abstract=abstract,
+                            primary_subject=primary_subject,
+                            subjects=subjects.split("; ") if subjects else [],
+                            arxiv_id=arxiv_id,
+                        )
+                    )
+            conn.close()
+        else:
+            raise RuntimeError("No metadata available. Load with preload_metadata=True or ensure db_path exists.")
+
+        t3 = time.perf_counter()
+        logger.info(f"Metadata fetch took {(t3 - t2) * 1000:.2f}ms (mode: {'memory' if self.metadata else 'sqlite'})")
 
         return results
 
@@ -181,12 +188,14 @@ class FAISSIndex:
         logger.info("Save complete")
 
     @classmethod
-    def load(cls, index_dir: str | Path, nprobe: int | None = None) -> "FAISSIndex":
+    def load(cls, index_dir: str | Path, nprobe: int | None = None, preload_metadata: bool = False) -> "FAISSIndex":
         """Load a FAISS index from disk.
 
         Args:
             index_dir: Directory containing index.faiss and (metadata.db or metadata.json).
             nprobe: Override nprobe value (uses saved value if None).
+            preload_metadata: If True, load all metadata into memory at startup (faster queries, more RAM).
+                              If False, query SQLite on each search (slower queries, less RAM).
 
         Returns:
             Loaded FAISSIndex instance.
@@ -202,13 +211,35 @@ class FAISSIndex:
         logger.info(f"Loading FAISS index from {index_path}")
         index = faiss.read_index(str(index_path))
 
-        # Prefer SQLite database over JSON
         metadata: list[dict[str, Any]] = []
         saved_nprobe = cls.DEFAULT_NPROBE
         db_path: Path | None = None
+
         if db_path_candidate.exists():
-            db_path = db_path_candidate
-            logger.info(f"Using SQLite database: {db_path}")
+            if preload_metadata:
+                # Preload all metadata into memory for faster queries
+                logger.info(f"Preloading metadata from SQLite: {db_path_candidate}")
+                conn = sqlite3.connect(db_path_candidate)
+                cur = conn.execute(
+                    "SELECT id, title, abstract, primary_subject, subjects, arxiv_id FROM papers ORDER BY id"
+                )
+                for row in cur:
+                    idx, title, abstract, primary_subject, subjects, arxiv_id = row
+                    metadata.append(
+                        {
+                            "title": title,
+                            "abstract": abstract,
+                            "primary_subject": primary_subject,
+                            "subjects": subjects.split("; ") if subjects else [],
+                            "arxiv_id": arxiv_id,
+                        }
+                    )
+                conn.close()
+                logger.info(f"Preloaded {len(metadata):,} entries into memory")
+            else:
+                # Use SQLite queries at search time
+                logger.info(f"Using SQLite database: {db_path_candidate}")
+                db_path = db_path_candidate
             # Get nprobe from JSON if it exists
             if metadata_path.exists():
                 with open(metadata_path) as f:
