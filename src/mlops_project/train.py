@@ -1,9 +1,10 @@
 import mlops_project.data
 from mlops_project.model import instantiate_sentence_transformer as get_model
-from mlops_project.data import ArxivPapersDataset
+from mlops_project.data import ArxivPapersDataset, preprocess, LossType
 import torch
 from loguru import logger
 import hydra
+from omegaconf import OmegaConf
 import sys
 from pathlib import Path
 from hydra.utils import get_original_cwd
@@ -65,6 +66,40 @@ def create_ir_evaluator(dataset, sample_size: int = 5000, name: str = "arxiv-ret
     )
 
 
+def ensure_data_exists(data_dir: Path) -> None:
+    """Run preprocessing if required data doesn't exist."""
+    train_pairs_path = data_dir / "train_pairs"
+    eval_pairs_path = data_dir / "eval_pairs"
+    test_path = data_dir / "test"
+
+    if train_pairs_path.exists() and eval_pairs_path.exists() and test_path.exists():
+        logger.info("Data already exists, skipping preprocessing.")
+        return
+
+    logger.info("Data not found, running preprocessing...")
+    config_path = Path(__file__).parent.parent.parent / "configs" / "dataset.yaml"
+    dataset_config = OmegaConf.load(config_path)
+
+    loss_str = dataset_config.pairs.loss
+    loss = (
+        LossType.MultipleNegativesRankingLoss
+        if loss_str == "MultipleNegativesRankingLoss"
+        else LossType.ContrastiveLoss
+    )
+
+    preprocess(
+        loss=loss,
+        output_folder=data_dir,
+        test_size=dataset_config.splits.test_size,
+        number_of_pairs=dataset_config.pairs.num_train,
+        number_of_eval_pairs=dataset_config.pairs.num_eval,
+        seed=dataset_config.splits.seed,
+        source=dataset_config.source,
+        columns=list(dataset_config.columns),
+        text_field=dataset_config.pairs.text_field,
+    )
+
+
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train_config")
 def train(config):
     logger.debug(f"Training config:\n{config}")
@@ -76,7 +111,10 @@ def train(config):
     elif not torch.cuda.is_available():
         logger.warning("CUDA not available. Continuing on CPU.")
 
-    test_dataset = ArxivPapersDataset("test", data_dir=Path(f"{get_original_cwd()}/data")).dataset
+    data_dir = Path(f"{get_original_cwd()}/data")
+    ensure_data_exists(data_dir)
+
+    test_dataset = ArxivPapersDataset("test", data_dir=data_dir).dataset
     model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
 
     # Create/load training/eval pairs
@@ -84,8 +122,8 @@ def train(config):
         train_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/train_pairs")
         eval_pairs_path = Path(f"/gcs/{config.meta.bucket_name}/data/eval_pairs")
     else:
-        train_pairs_path = Path(f"{get_original_cwd()}/data/train_pairs")
-        eval_pairs_path = Path(f"{get_original_cwd()}/data/eval_pairs")
+        train_pairs_path = data_dir / "train_pairs"
+        eval_pairs_path = data_dir / "eval_pairs"
 
     train_pairs = mlops_project.data.load_pairs(train_pairs_path)
     logger.info(f"Training pairs: {len(train_pairs)}")
