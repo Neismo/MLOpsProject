@@ -6,9 +6,12 @@ workerPoolSpecs:
   replicaCount: 1
   containerSpec:
     imageUri: europe-west1-docker.pkg.dev/mlopsproject-484419/mlops-registry/mlops-train:cuda
-    env:
-      - name: WANDB_API_KEY
-        value: $WANDB_API_KEY
-
+    command:
+      - uv
+      - run
+      - python
+      - src/mlops_project/train.py
+    args:
+      - wandb.enabled=false
 scheduling:
   timeout: 3600s
