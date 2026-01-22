@@ -57,6 +57,7 @@ jobs:
         run: |
           uv run coverage run -m pytest tests/
           uv run coverage report -m
+
   build:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest

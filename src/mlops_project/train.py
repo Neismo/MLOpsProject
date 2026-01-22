@@ -57,9 +57,16 @@ def train(config):
     if not config.wandb.enabled:
         logger.info("W&B logging disabled (config.wandb.enabled=false).")
 
+    # Save model to GCS or locally
+    if config.meta.use_gcs:
+        logger.info("Using GCS for data storage (config.meta.use_gcs=true).")
+        output_dir = f"/gcs/{config.meta.bucket_name}/models/contrastive-minilm"
+    else:
+        output_dir = f"{get_original_cwd()}/models/contrastive-minilm"
+
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=f"{get_original_cwd()}/models/contrastive-minilm",
+        output_dir=output_dir,
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
