@@ -19,4 +19,4 @@ COPY src/ src/
 COPY configs/ configs/
 
 # Entrypoint
-CMD ["python", "src/mlops_project/train.py"]
+CMD ["uv", "run", "src/mlops_project/train.py"]
