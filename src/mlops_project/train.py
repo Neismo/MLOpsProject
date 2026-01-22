@@ -30,7 +30,10 @@ def train(config):
     elif not torch.cuda.is_available():
         logger.warning("CUDA not available. Continuing on CPU.")
 
-    data_dir = Path(f"{get_original_cwd()}/data")
+    if config.meta.use_gcs:
+        data_dir = Path(f"/gcs/{config.meta.bucket_name}/data")
+    else:
+        data_dir = Path(f"{get_original_cwd()}/data")
     ensure_data_exists(data_dir, config)
 
     test_dataset = ArxivPapersDataset("test", data_dir=data_dir).dataset
