@@ -8,7 +8,7 @@ from enum import Enum
 import hydra
 from hydra.utils import get_original_cwd
 from loguru import logger
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, ListConfig
 
 
 class LossType(str, Enum):
@@ -250,7 +250,7 @@ def preprocess(
 
 
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="dataset")
-def preprocess_hydra(config) -> None:
+def preprocess_hydra(config: DictConfig | ListConfig) -> None:
     """Hydra entry point for preprocessing."""
     output_folder = Path(get_original_cwd()) / config.output_dir
 
@@ -275,7 +275,7 @@ def preprocess_hydra(config) -> None:
     )
 
 
-def _build_config_dict(dataset_config) -> dict:
+def _build_config_dict(dataset_config: DictConfig | ListConfig) -> dict:
     """Build a config dict from dataset config for comparison."""
     return {
         "loss": dataset_config.pairs.loss,
@@ -290,7 +290,7 @@ def _build_config_dict(dataset_config) -> dict:
     }
 
 
-def ensure_data_exists(data_dir: Path, dataset_config: DictConfig | None = None) -> None:
+def ensure_data_exists(data_dir: Path, dataset_config: DictConfig | ListConfig | None = None) -> None:
     """Run preprocessing if required data doesn't exist or config has changed."""
     train_pairs_path = data_dir / "train_pairs"
     eval_pairs_path = data_dir / "eval_pairs"

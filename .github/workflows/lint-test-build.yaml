@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [master, build]
+    branches: [master]
 
 jobs:
   format:
@@ -55,11 +55,11 @@ jobs:
         run: |
           uv run coverage run -m pytest tests/
           uv run coverage report -m
+
   build:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test # only build if tests pass
-    if: ${{ github.ref == 'refs/heads/build' && github.event_name == 'push' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
