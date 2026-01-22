@@ -1,31 +1,31 @@
-# Use an official Python base image
 FROM nvidia/cuda:12.8.0-cudnn9-runtime-ubuntu22.04
 
-# Python
+# Install Python
 RUN apt-get update && apt-get install -y \
-    python3.12 python3-pip python3-venv \
+    python3.12 \
+    python3.12-venv \
+    python3.12-distutils \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3.12 /usr/bin/python
 
+# Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
 
-# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Layer 1: Install dependencies only (cached unless pyproject.toml/uv.lock change)
+# Install dependencies
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --locked --no-install-project --no-dev
 
-# Layer 2: Copy application code
+# Copy source + configs
 COPY src/ src/
-
-# Layer 3: Copy configs (needed for Hydra)
 COPY configs/ configs/
 
-# Entrypoint
-CMD ["uv", "run", "src/mlops_project/train.py"]
+# Entry point (IMPORTANT)
+CMD ["uv", "run", "python", "src/mlops_project/train.py"]
