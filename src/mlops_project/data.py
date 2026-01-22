@@ -8,6 +8,7 @@ from enum import Enum
 import hydra
 from hydra.utils import get_original_cwd
 from loguru import logger
+from omegaconf import OmegaConf
 
 
 class LossType(str, Enum):
@@ -194,6 +195,20 @@ def preprocess(
         seed=seed,
     )
 
+    # Save config used for preprocessing
+    used_config = {
+        "loss": loss.value,
+        "test_size": test_size,
+        "number_of_pairs": number_of_pairs,
+        "number_of_eval_pairs": number_of_eval_pairs,
+        "seed": seed,
+        "source": source,
+        "columns": columns,
+        "text_field": text_field,
+    }
+    OmegaConf.save(OmegaConf.create(used_config), output_folder / "preprocess_config.yaml")
+    logger.info(f"Saved preprocessing config to {output_folder / 'preprocess_config.yaml'}")
+
     logger.info("Done!")
 
 
@@ -219,6 +234,64 @@ def preprocess_hydra(config) -> None:
         source=config.source,
         columns=list(config.columns),
         text_field=config.pairs.text_field,
+    )
+
+
+def _build_config_dict(dataset_config) -> dict:
+    """Build a config dict from dataset config for comparison."""
+    return {
+        "loss": dataset_config.pairs.loss,
+        "test_size": dataset_config.splits.test_size,
+        "number_of_pairs": dataset_config.pairs.num_train,
+        "number_of_eval_pairs": dataset_config.pairs.num_eval,
+        "seed": dataset_config.splits.seed,
+        "source": dataset_config.source,
+        "columns": list(dataset_config.columns),
+        "text_field": dataset_config.pairs.text_field,
+    }
+
+
+def ensure_data_exists(data_dir: Path) -> None:
+    """Run preprocessing if required data doesn't exist or config has changed."""
+    train_pairs_path = data_dir / "train_pairs"
+    eval_pairs_path = data_dir / "eval_pairs"
+    test_path = data_dir / "test"
+    saved_config_path = data_dir / "preprocess_config.yaml"
+
+    config_path = Path(__file__).parent.parent.parent / "configs" / "dataset.yaml"
+    dataset_config = OmegaConf.load(config_path)
+    current_config = _build_config_dict(dataset_config)
+
+    # Check if data exists and config matches
+    if train_pairs_path.exists() and eval_pairs_path.exists() and test_path.exists():
+        if saved_config_path.exists():
+            saved_config = OmegaConf.to_container(OmegaConf.load(saved_config_path))
+            if saved_config == current_config:
+                logger.info("Data already exists with matching config, skipping preprocessing.")
+                return
+            logger.info("Config has changed, re-running preprocessing...")
+        else:
+            logger.info("No saved config found, re-running preprocessing to ensure consistency...")
+    else:
+        logger.info("Data not found, running preprocessing...")
+
+    loss_str = dataset_config.pairs.loss
+    loss = (
+        LossType.MultipleNegativesRankingLoss
+        if loss_str == "MultipleNegativesRankingLoss"
+        else LossType.ContrastiveLoss
+    )
+
+    preprocess(
+        loss=loss,
+        output_folder=data_dir,
+        test_size=dataset_config.splits.test_size,
+        number_of_pairs=dataset_config.pairs.num_train,
+        number_of_eval_pairs=dataset_config.pairs.num_eval,
+        seed=dataset_config.splits.seed,
+        source=dataset_config.source,
+        columns=list(dataset_config.columns),
+        text_field=dataset_config.pairs.text_field,
     )
 
 
