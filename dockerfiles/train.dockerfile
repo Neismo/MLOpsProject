@@ -1,8 +1,5 @@
 # Use an official Python base image
-FROM python:3.12-slim
-
-# Install uv via binary copy
-COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -25,4 +22,4 @@ COPY configs/ configs/
 COPY README.md .
 
 # Entrypoint
-CMD ["uv", "run", "python", "src/mlops_project/train.py"]
+CMD ["python", "src/mlops_project/train.py"]
