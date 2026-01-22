@@ -1,0 +1,16 @@
+source: nick007x/arxiv-papers
+columns:
+  - primary_subject
+  - subjects
+  - abstract
+  - title
+splits:
+  test_size: 0.2
+  seed: 42
+pairs:
+  num_train: 1000000
+  num_eval: 10000
+  loss: MultipleNegativesRankingLoss
+  balanced: true
+  text_field: abstract
+output_dir: data
