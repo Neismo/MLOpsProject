@@ -58,6 +58,13 @@ def train(config):
     if not config.wandb.enabled:
         logger.info("W&B logging disabled (config.wandb.enabled=false).")
 
+    # Save model to GCS or locally
+    if config.meta.use_gcs:
+        logger.info("Using GCS for data storage (config.meta.use_gcs=true).")
+        output_dir = f"/gcs/{config.meta.bucket_name}"
+    else:
+        output_dir = f"{get_original_cwd()}"
+
     # Build output directory name from config
     output_dir_name = build_output_dir_name(
         model=config.train.model,
@@ -68,7 +75,7 @@ def train(config):
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=f"{get_original_cwd()}/models/{output_dir_name}",
+        output_dir=f"{output_dir/models/{output_dir_name}",
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,

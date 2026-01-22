@@ -8,7 +8,7 @@ splits:
   test_size: 0.2
   seed: 42
 pairs:
-  num_train: 1000000
+  num_train: 100000
   num_eval: 10000
   loss: MultipleNegativesRankingLoss
   balanced: true
