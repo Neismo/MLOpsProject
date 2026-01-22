@@ -2,11 +2,13 @@ import argparse
 import os
 import sys
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import torch
 from loguru import logger
+
+from mlops_project.faiss_index import FAISSIndex
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -19,6 +21,12 @@ parser.add_argument(
     type=str,
     default=None,
     help="Path to the SentenceTransformer model directory",
+)
+parser.add_argument(
+    "--index-path",
+    type=str,
+    default=None,
+    help="Path to the FAISS index directory (optional)",
 )
 args, _ = parser.parse_known_args()
 
@@ -45,6 +53,23 @@ except Exception as e:
     raise
 
 
+# ---------- Load FAISS index (optional) ----------
+
+INDEX_PATH = args.index_path or os.environ.get("INDEX_PATH")
+faiss_index: FAISSIndex | None = None
+
+if INDEX_PATH:
+    index_path = Path(INDEX_PATH)
+    if index_path.exists():
+        try:
+            faiss_index = FAISSIndex.load(index_path)
+            logger.info(f"FAISS index loaded from {index_path}")
+        except Exception as e:
+            logger.warning(f"Failed to load FAISS index: {e}")
+    else:
+        logger.warning(f"FAISS index path does not exist: {index_path}")
+
+
 # ---------- Request / Response schemas ----------
 
 
@@ -60,6 +85,24 @@ class EmbeddingResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     device: str
+
+
+class SearchRequest(BaseModel):
+    abstract: str
+    k: int = Field(default=10, ge=1, le=100)
+    nprobe: int | None = Field(default=None, ge=1, le=1024)
+
+
+class SearchResultItem(BaseModel):
+    score: float
+    title: str
+    abstract: str
+    primary_subject: str
+    subjects: list[str] = []
+
+
+class SearchResponse(BaseModel):
+    results: list[SearchResultItem]
 
 
 # ---------- Health check ----------
@@ -88,4 +131,47 @@ def embed_abstract(request: AbstractRequest) -> EmbeddingResponse:
     return EmbeddingResponse(
         embedding_dim=len(embedding),
         embedding=embedding.tolist(),
+    )
+
+
+# ---------- Search endpoint ----------
+
+
+@app.post("/search", response_model=SearchResponse)
+def search_similar(request: SearchRequest) -> SearchResponse:
+    if faiss_index is None:
+        raise HTTPException(
+            status_code=503,
+            detail="FAISS index not loaded. Set INDEX_PATH environment variable or --index-path argument.",
+        )
+
+    if not request.abstract.strip():
+        logger.warning("Empty abstract received for search")
+        raise HTTPException(status_code=400, detail="Abstract must not be empty")
+
+    # Override nprobe if specified
+    if request.nprobe is not None:
+        faiss_index.nprobe = request.nprobe
+
+    # Encode the query abstract
+    query_embedding = model.encode(
+        request.abstract,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
+
+    # Search the index
+    results = faiss_index.search(query_embedding, k=request.k)
+
+    return SearchResponse(
+        results=[
+            SearchResultItem(
+                score=r.score,
+                title=r.title,
+                abstract=r.abstract,
+                primary_subject=r.primary_subject,
+                subjects=r.subjects,
+            )
+            for r in results
+        ]
     )
