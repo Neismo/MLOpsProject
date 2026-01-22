@@ -4,7 +4,7 @@ site_description: Contrastive embeddings for arXiv papers with an end to end MLO
 docs_dir: docs/source
 repo_url: https://github.com/Neismo/MLOpsProject
 repo_name: Neismo/MLOpsProject
-edit_uri: https://raw.githubusercontent.com/Neismo/MLOpsProject/master/docs/source/
+edit_uri: blob/master/docs/source/
 
 theme:
   name: material
@@ -41,8 +41,7 @@ theme:
 
 plugins:
   - search
-  - tags:
-      tags_file: tags.md
+  - tags
   - git-revision-date-localized:
       type: timeago
       fallback_to_build_date: true

@@ -17,4 +17,4 @@ That behavior is not friendly to auto documentation, so this module is documente
 - Embeddings are normalized to unit length.
 - GPU is used when available.
 
-See [API and deployment](../api/) for usage and deployment details.
+See [API and deployment](../api.md) for usage and deployment details.

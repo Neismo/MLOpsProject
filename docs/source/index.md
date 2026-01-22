@@ -24,8 +24,8 @@ uv run inv train
 ```
 
 ## Key docs
-- [Data and preprocessing](data/)
-- [Training](training/)
-- [Evaluation](evaluation/)
-- [API and deployment](api/)
-- [Configuration](configuration/)
+- [Data and preprocessing](data.md)
+- [Training](training.md)
+- [Evaluation](evaluation.md)
+- [API and deployment](api.md)
+- [Configuration](configuration.md)
