@@ -1,3 +1,7 @@
+defaults:
+  - dataset
+  - _self_
+
 meta:
   save_model: true
   use_gcs: false
@@ -9,5 +13,6 @@ train:
   batch_size: 256
   warmup_ratio: 0.1
   loss: MultipleNegativesRankingLoss # default, good for positive only pairs
+  model: all-MiniLM-L6-v2
 wandb:
   enabled: true

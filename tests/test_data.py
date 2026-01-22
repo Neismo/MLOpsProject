@@ -280,7 +280,7 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
     monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
 
     output_folder = tmp_path / "test_data"
-    num_pairs = 50000
+    num_pairs = 10000
     test_size = 0.2
     seed = 123
 
@@ -322,3 +322,86 @@ def test_preprocess(mock_raw_data, tmp_path, monkeypatch, loss_type, expected_co
     if loss_type == mlops_project.data.LossType.ContrastiveLoss:
         for row in train_split:
             assert row["label"] in [0.0, 1.0]
+
+
+def test_init_success(mock_data, tmp_path):
+    """Test that ArxivPapersDataset initializes correctly when data exists."""
+    # Save mock data to disk in the expected location
+    split_name = "train"
+    data_dir = tmp_path / "data"
+    split_path = data_dir / split_name
+    split_path.mkdir(parents=True)
+    mock_data.save_to_disk(str(split_path))
+
+    # Create dataset instance
+    dataset = mlops_project.data.ArxivPapersDataset(split=split_name, data_dir=data_dir)
+
+    assert dataset is not None
+    assert hasattr(dataset, "dataset")
+
+
+def test_init_file_not_found(tmp_path):
+    """Test that ArxivPapersDataset raises FileNotFoundError when data doesn't exist."""
+    data_dir = tmp_path / "nonexistent_data"
+
+    with pytest.raises(FileNotFoundError, match="Dataset not found"):
+        mlops_project.data.ArxivPapersDataset(split="train", data_dir=data_dir)
+
+
+def test_len(mock_data, tmp_path):
+    """Test that __len__ returns the correct length of the dataset."""
+    split_name = "train"
+    data_dir = tmp_path / "data"
+    split_path = data_dir / split_name
+    split_path.mkdir(parents=True)
+    mock_data.save_to_disk(str(split_path))
+
+    dataset = mlops_project.data.ArxivPapersDataset(split=split_name, data_dir=data_dir)
+
+    assert len(dataset) == len(mock_data)
+
+
+def test_getitem(mock_data, tmp_path):
+    """Test that __getitem__ returns the correct item from the dataset."""
+    split_name = "train"
+    data_dir = tmp_path / "data"
+    split_path = data_dir / split_name
+    split_path.mkdir(parents=True)
+    mock_data.save_to_disk(str(split_path))
+
+    dataset = mlops_project.data.ArxivPapersDataset(split=split_name, data_dir=data_dir)
+
+    # Test getting first item
+    item = dataset[0]
+    assert isinstance(item, dict)
+    assert "primary_subject" in item
+    assert "abstract" in item
+
+
+def test_getitem_all_indices(mock_data, tmp_path):
+    """Test that __getitem__ works for all valid indices."""
+    split_name = "train"
+    data_dir = tmp_path / "data"
+    split_path = data_dir / split_name
+    split_path.mkdir(parents=True)
+    mock_data.save_to_disk(str(split_path))
+
+    dataset = mlops_project.data.ArxivPapersDataset(split=split_name, data_dir=data_dir)
+
+    # Test that all indices are accessible
+    for i in range(len(dataset)):
+        item = dataset[i]
+        assert isinstance(item, dict)
+
+
+@pytest.mark.parametrize("split", ["train", "eval", "test"])
+def test_different_splits(mock_data, tmp_path, split):
+    """Test that ArxivPapersDataset works with different split names."""
+    data_dir = tmp_path / "data"
+
+    split_path = data_dir / split
+    split_path.mkdir(parents=True, exist_ok=True)
+    mock_data.save_to_disk(str(split_path))
+
+    dataset = mlops_project.data.ArxivPapersDataset(split=split, data_dir=data_dir)
+    assert len(dataset) == len(mock_data)

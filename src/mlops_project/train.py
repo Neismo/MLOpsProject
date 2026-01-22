@@ -12,6 +12,7 @@ import mlops_project.data
 from mlops_project.data import ArxivPapersDataset, ensure_data_exists
 from mlops_project.evaluate import create_ir_evaluator
 from mlops_project.model import instantiate_sentence_transformer as get_model
+from mlops_project.utils import build_output_dir_name
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -30,10 +31,10 @@ def train(config):
         logger.warning("CUDA not available. Continuing on CPU.")
 
     data_dir = Path(f"{get_original_cwd()}/data")
-    ensure_data_exists(data_dir)
+    ensure_data_exists(data_dir, config)
 
     test_dataset = ArxivPapersDataset("test", data_dir=data_dir).dataset
-    model = get_model(cache_dir=f"{get_original_cwd()}/models/cache/")
+    model = get_model(model_name=config.train.model, cache_dir=f"{get_original_cwd()}/models/cache/")
 
     # Create/load training/eval pairs
     if config.meta.use_gcs:
@@ -60,18 +61,27 @@ def train(config):
     # Save model to GCS or locally
     if config.meta.use_gcs:
         logger.info("Using GCS for data storage (config.meta.use_gcs=true).")
-        output_dir = f"/gcs/{config.meta.bucket_name}/models/contrastive-minilm"
+        output_dir = f"/gcs/{config.meta.bucket_name}"
     else:
-        output_dir = f"{get_original_cwd()}/models/contrastive-minilm"
+        output_dir = f"{get_original_cwd()}"
+
+    # Build output directory name from config
+    output_dir_name = build_output_dir_name(
+        model=config.train.model,
+        loss=config.train.loss,
+        num_pairs=len(train_pairs),
+        balanced=config.pairs.balanced,
+    )
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=output_dir,
+        output_dir=f"{output_dir/models/{output_dir_name}",
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
         learning_rate=2e-5,
         warmup_ratio=config.train.warmup_ratio,
+        seed=config.train.seed,
         eval_strategy="steps",
         eval_steps=500,
         save_strategy="steps" if config.meta.save_model else "no",

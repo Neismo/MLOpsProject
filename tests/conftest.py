@@ -245,3 +245,31 @@ def mock_raw_data() -> Dataset:
         data["title"].append(unique_title)
 
     return Dataset.from_dict(data)
+
+
+@pytest.fixture(scope="function")
+def api_client(monkeypatch, tmp_path):
+    """TestClient with mocked SentenceTransformer for API tests."""
+
+    class _MockModel:
+        def __init__(self, model_path, device=None):
+            pass
+
+        def encode(self, text, convert_to_numpy=True, normalize_embeddings=True):
+            embedding = np.random.randn(384).astype(np.float32)
+            return embedding / np.linalg.norm(embedding)
+
+    monkeypatch.setattr("sentence_transformers.SentenceTransformer", _MockModel)
+
+    model_dir = tmp_path / "model"
+    model_dir.mkdir()
+    monkeypatch.setenv("MODEL_PATH", str(model_dir))
+
+    import importlib
+    import mlops_project.api
+
+    importlib.reload(mlops_project.api)
+
+    from fastapi.testclient import TestClient
+
+    return TestClient(mlops_project.api.app)
