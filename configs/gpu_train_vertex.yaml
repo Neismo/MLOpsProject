@@ -12,6 +12,6 @@ workerPoolSpecs:
       - python
       - src/mlops_project/train.py
     args:
-      - wandb.enabled=false
+      - wandb.enabled=true
 scheduling:
   timeout: 3600s
