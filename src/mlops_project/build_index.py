@@ -93,7 +93,7 @@ def build(
     # Compile model for faster inference
     if compile_model and device == "cuda":
         logger.info("Compiling model with torch.compile()...")
-        model[0].auto_model = torch.compile(model[0].auto_model, mode="reduce-overhead")
+        model[0].auto_model = torch.compile(model[0].auto_model, mode="reduce-overhead")  # type: ignore[assignment,arg-type]
         logger.info("Model compiled")
 
     # Load and concatenate datasets
