@@ -170,7 +170,7 @@ def search_similar(request: SearchRequest) -> SearchResponse:
                 title=r.title,
                 abstract=r.abstract,
                 primary_subject=r.primary_subject,
-                subjects=r.subjects,
+                subjects=r.subjects if isinstance(r.subjects, list) else [r.subjects] if r.subjects else [],
             )
             for r in results
         ]
