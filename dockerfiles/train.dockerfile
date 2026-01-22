@@ -1,5 +1,14 @@
 # Use an official Python base image
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+FROM nvidia/cuda:12.8.0-cudnn9-runtime-ubuntu22.04
+
+# Python
+RUN apt-get update && apt-get install -y \
+    python3.12 python3-pip python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3.12 /usr/bin/python
+
+COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
