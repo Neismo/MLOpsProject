@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.0-cudnn9-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
 
 # Install Python
 RUN apt-get update && apt-get install -y \
@@ -27,5 +27,5 @@ RUN uv sync --locked --no-install-project --no-dev
 COPY src/ src/
 COPY configs/ configs/
 
-# Entry point (IMPORTANT)
+# Entry point
 CMD ["uv", "run", "python", "src/mlops_project/train.py"]
