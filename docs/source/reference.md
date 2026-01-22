@@ -20,5 +20,6 @@
 ::: mlops_project.visualize
 
 ## API module
-The FastAPI module performs model loading at import time, which is not friendly to auto documentation.
-See [API and deployment](../api.md) for endpoint and runtime details.
+The [FastAPI](https://fastapi.tiangolo.com/) module performs model loading at import time, which is not friendly to
+auto documentation.
+See [API and deployment](api.md) for endpoint and runtime details.

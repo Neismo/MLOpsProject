@@ -1,14 +1,16 @@
 # Training
 
 ## Training pipeline
-Training runs from `src/mlops_project/train.py` and is configured via Hydra using `configs/train_config.yaml`.
+Training runs from `src/mlops_project/train.py` and is configured via [Hydra](https://hydra.cc/docs/intro/) using
+`configs/train_config.yaml`.
 
 Flow:
 1. Validate CUDA availability when `meta.require_cuda=true`.
 2. Ensure data exists (preprocess if needed).
 3. Load training and evaluation pairs.
-4. Instantiate the sentence transformer model.
-5. Train with `SentenceTransformerTrainer` and evaluate precision at k.
+4. Instantiate the [SentenceTransformer](https://www.sbert.net/) model.
+5. Train with `SentenceTransformerTrainer` from
+   [Sentence Transformers](https://www.sbert.net/docs/training/overview.html) and evaluate precision at k.
 
 Key configuration options:
 - `train.model`: base model (default `all-MiniLM-L6-v2`).
@@ -16,11 +18,11 @@ Key configuration options:
 - `train.batch_size`, `train.epochs`, `train.warmup_ratio`, `train.seed`.
 - `meta.save_model`: toggle checkpoint saving.
 - `meta.use_gcs` and `meta.bucket_name`: load and save to GCS paths.
-- `wandb.enabled`: disable logging for offline runs.
+- `wandb.enabled`: disable [Weights & Biases](https://docs.wandb.ai/) logging for offline runs.
 
 ## Run training and outputs
 ```bash
-uv run inv train
+uv run python src/mlops_project/train.py
 ```
 
 Override parameters:
@@ -29,6 +31,8 @@ uv run python src/mlops_project/train.py train.loss=ContrastiveLoss train.epochs
 ```
 
 **Docker + CUDA**
+Requires [Docker](https://docs.docker.com/) with NVIDIA GPU support.
+
 Build the CUDA training image:
 ```bash
 docker build -f dockerfiles/train.dockerfile -t mlops-train:cuda .
@@ -51,4 +55,4 @@ docker run --rm --gpus all \
 ```
 
 Models are saved under `models/<model>-<loss>-<pairs>-<balanced>` when `meta.save_model=true`.
-Logs stream to stdout and `train.log` via loguru.
+Logs stream to stdout and `train.log` via [Loguru](https://github.com/Delgan/loguru).

@@ -1,7 +1,7 @@
 # Configuration
 
 ## Config files
-Training and preprocessing use Hydra config files in `configs/`.
+Training and preprocessing use [Hydra](https://hydra.cc/docs/intro/) config files in `configs/`.
 
 Key files:
 - `configs/dataset.yaml`

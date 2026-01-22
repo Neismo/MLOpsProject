@@ -1,7 +1,16 @@
 # API and deployment
 
 ## Service usage
-The API serves normalized embeddings for abstracts.
+The API serves normalized embeddings for abstracts using [FastAPI](https://fastapi.tiangolo.com/).
+
+```mermaid
+flowchart LR
+  A[Client] --> B[Post embed]
+  B --> C[FastAPI app]
+  C --> D[SentenceTransformer model]
+  D --> E[Normalize embeddings]
+  E --> F[JSON response]
+```
 
 **Endpoints**
 - `GET /health` returns service status and device.
@@ -29,9 +38,11 @@ curl -X POST http://localhost:8000/embed \
 
 **Model loading**
 The API loads a model from `--model-path`, then `MODEL_PATH`, and falls back to `models/contrastive-minilm/`.
-The model directory must exist and contain a SentenceTransformer model. GPU is used when available.
+The model directory must exist and contain a [SentenceTransformer](https://www.sbert.net/) model. GPU is used when
+available.
 
 **Run locally**
+Run the service with [Uvicorn](https://www.uvicorn.org/):
 ```bash
 MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops_project.api:app \
   --host 0.0.0.0 --port 8000
@@ -52,8 +63,11 @@ docker run --rm -p 8000:8000 \
 If you run on Linux with NVIDIA drivers, add `--gpus all` to the container run command.
 
 **Deployment pipeline**
-Cloud Build (`cloudbuild.yaml`) publishes the training image on the `build` branch after CI checks pass.
+Cloud Build (`cloudbuild.yaml`) publishes the training image on the `build` branch after CI checks pass. See
+[Cloud Build](https://cloud.google.com/build/docs) for configuration details.
 The API image is built locally from `dockerfiles/api.dockerfile` unless you add a dedicated CI workflow.
 
 **ONNX runtime**
-An ONNX loader exists in `mlops_project.model`, but the API currently uses SentenceTransformer directly.
+ONNX export and inference are supported via `mlops_project.model` with
+[ONNX Runtime](https://onnxruntime.ai/docs/). Use the exported ONNX model for CPU-friendly deployments or batch
+inference workflows.

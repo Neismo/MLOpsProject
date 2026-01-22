@@ -1,13 +1,14 @@
 # Data and preprocessing
 
 ## Dataset and splits
-The project uses the Hugging Face dataset `nick007x/arxiv-papers`. We rely on the following fields:
+The project uses the Hugging Face dataset [`nick007x/arxiv-papers`](https://huggingface.co/datasets/nick007x/arxiv-papers)
+and loads it with [datasets](https://huggingface.co/docs/datasets/). We rely on the following fields:
 - `primary_subject` for contrastive labels
 - `subjects` for metadata
 - `abstract` and `title` as text inputs
 
-`preprocess` creates train, eval, and test splits and stores them under `data/` in Hugging Face datasets format.
-The split ratios and seed live in `configs/dataset.yaml`.
+`preprocess` creates train, eval, and test splits and stores them under `data/` in datasets format.
+The split ratios and seed live in `configs/dataset.yaml` and are managed via [Hydra](https://hydra.cc/docs/intro/).
 
 ## Pairs and preprocessing workflow
 Two pair building strategies are supported:
@@ -16,9 +17,24 @@ Two pair building strategies are supported:
 
 The `balanced` flag controls whether subjects are sampled uniformly or weighted by frequency.
 
+## Preprocessing flow
+```mermaid
+flowchart TD
+  A[Load dataset] --> B[Select columns]
+  B --> C[Split train eval test]
+  C --> D[Save splits to data]
+  C --> E[Build train pairs]
+  C --> F[Build eval pairs]
+  E --> G[Save train pairs]
+  F --> H[Save eval pairs]
+  D --> I[Save preprocess config]
+  G --> I
+  H --> I
+```
+
 **Run preprocessing**
 ```bash
-uv run inv preprocess
+uv run python src/mlops_project/data.py
 ```
 
 Override defaults with Hydra:
@@ -37,4 +53,4 @@ After preprocessing you should see:
 - `data/train_pairs`, `data/eval_pairs`
 - `data/preprocess_config.yaml` for reproducibility checks
 
-`ensure_data_exists` will re run preprocessing if the saved config no longer matches the requested config.
+`ensure_data_exists` will re-run preprocessing if the saved config no longer matches the requested config.

@@ -47,6 +47,7 @@ plugins:
       fallback_to_build_date: true
   - minify:
       minify_html: true
+  - mermaid2
   - mkdocstrings:
       handlers:
         python:
@@ -68,7 +69,11 @@ markdown_extensions:
       permalink: true
       toc_depth: 2-2
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.inlinehilite
