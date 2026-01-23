@@ -31,7 +31,7 @@ A quick snapshot of the tooling that anchors data, training, automation, and ser
       <div class="stack-items">
         <span class="stack-tool"><img src="https://cdn.simpleicons.org/pytorch" alt="PyTorch logo">PyTorch + Sentence Transformers</span>
         <span class="stack-tool"><img src="https://cdn.simpleicons.org/weightsandbiases" alt="Weights and Biases logo">Weights & Biases</span>
-        <span class="stack-tool"><img src="logos/logo.svg" alt="Hydra logo">Hydra</span>
+        <span class="stack-tool"><img src="logos/hydra.svg" alt="Hydra logo">Hydra</span>
       </div>
     </div>
     <div class="stack-group">
