@@ -69,16 +69,16 @@ def stratified_sample_indices(
     n_total = len(subjects)
 
     # Calculate samples per subject proportionally
-    sampled_indices = []
+    sampled_list: list[int] = []
     for subj, indices in subject_to_indices.items():
         proportion = len(indices) / n_total
         n_samples = max(1, int(sample_size * proportion))
         n_samples = min(n_samples, len(indices))
         sampled = rng.choice(indices, size=n_samples, replace=False)
-        sampled_indices.extend(sampled)
+        sampled_list.extend(sampled)
 
     # If we have too many, trim randomly
-    sampled_indices = np.array(sampled_indices)
+    sampled_indices = np.array(sampled_list)
     if len(sampled_indices) > sample_size:
         sampled_indices = rng.choice(sampled_indices, size=sample_size, replace=False)
 
