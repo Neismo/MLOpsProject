@@ -1,11 +1,14 @@
 """Tests for FAISS index functionality."""
 
+import sys
+
 import numpy as np
 import pytest
 
 from mlops_project.faiss_index import FAISSIndex, SearchResult
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="FAISS IVF training segfaults on macOS CI")
 class TestFAISSIndex:
     """Tests for the FAISSIndex class."""
 
@@ -171,6 +174,7 @@ class TestFAISSIndex:
         assert loaded_index.nprobe == 16
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="FAISS IVF training segfaults on macOS CI")
 class TestSearchAPIEndpoint:
     """Tests for the /search API endpoint."""
 
@@ -315,6 +319,7 @@ class TestSearchAPIEndpoint:
         assert response.status_code == 422
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="FAISS IVF training segfaults on macOS CI")
 class TestMetricAPIEndpoint:
     """Tests for Prometheus metrics endpoint."""
 
