@@ -1,66 +1,74 @@
 site_name: MLOps Project
-site_description: ArXiv Contrastive Embeddings - a library for contrastive learning and data quality in PyTorch.
-site_author: noah
-
-site_url: https://neismo.github.io/MLOpsProject/
-use_directory_urls: true
-
+site_author: DeepBois
+site_description: Contrastive embeddings for arXiv papers with an end to end MLOps pipeline.
 docs_dir: docs/source
-site_dir: site
+repo_url: https://github.com/Neismo/MLOpsProject
+repo_name: Neismo/MLOpsProject
+edit_uri: blob/master/docs/source/
 
 theme:
   name: material
-  features:
-    - content.code.annotate
-    - content.code.copy
-    - navigation.footer
-    - navigation.indexes
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.highlight
-    - search.suggest
-    - toc.follow
-    - toc.integrate
+  language: en
+  font:
+    text: Space Grotesk
+    code: IBM Plex Mono
   palette:
-    - media: "(prefers-color-scheme)"
+    - scheme: slate
+      primary: blue grey
       accent: lime
-      primary: black
       toggle:
-        icon: material/brightness-auto
+        icon: material/weather-sunny
         name: Switch to light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
+    - scheme: default
+      primary: blue grey
       accent: lime
-      primary: black
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-night
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      accent: lime
-      primary: black
-      toggle:
-        icon: material/brightness-4
-        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+    - toc.integrate
+    - content.action.view
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
 
-nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Quickstart: quickstart.md
-  - Configuration: configuration.md
-  - Augmentation: augmentation.md
+plugins:
+  - search
+  - tags
+  - git-revision-date-localized:
+      type: timeago
+      fallback_to_build_date: true
+  - minify:
+      minify_html: true
+  - mermaid2
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            show_root_heading: true
+            separate_signature: true
+            show_signature_annotations: true
+            show_source: false
 
 markdown_extensions:
-  - attr_list
   - admonition
+  - attr_list
+  - md_in_html
   - footnotes
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 2-2
   - pymdownx.details
-  - pymdownx.highlight:
-      anchor_linenums: true
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -68,11 +76,28 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - tables
-  - toc:
-      permalink: "¤"
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
 
-plugins:
-  - search
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Project:
+      - Home: index.md
+      - Quickstart: quickstart.md
+      - Overview: overview.md
+      - Data and Preprocessing: data.md
+      - Training: training.md
+      - Evaluation: evaluation.md
+      - API and Deployment: api.md
+  - Ops:
+      - Configuration: configuration.md
+      - MLOps Stack: ops.md
+  - Reference:
+      - Project Structure: project-structure.md
+      - Python API: reference.md
+      - API Module Notes: reference/api.md
+      - Tags: tags.md
