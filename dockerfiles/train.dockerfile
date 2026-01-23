@@ -1,19 +1,18 @@
-FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04
 
 # Avoid interactive apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.10 and essentials
+# Install Python 3.12 and essentials
 RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3.10-venv \
-    python3.10-distutils \
+    python3.12 \
+    python3.12-venv \
     python3-pip \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Make python -> python3.10
-RUN ln -s /usr/bin/python3.10 /usr/bin/python
+# Make python -> python3.12
+RUN ln -s /usr/bin/python3.12 /usr/bin/python
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
