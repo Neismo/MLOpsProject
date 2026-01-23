@@ -156,6 +156,21 @@ curl -X POST http://localhost:8000/search \
 
 We use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. We also experimented with [ModernBERT](https://huggingface.co/answerdotai/ModernBERT-base) to compare how model scale impacts embedding quality and downstream performance.
 
+## Development Commands
+
+The project uses [Invoke](https://www.pyinvoke.org/) for task automation. Common tasks are defined in `tasks.py`:
+
+```bash
+# Preprocess data
+uv run invoke preprocess
+
+# Train model
+uv run invoke train
+
+# Run tests with coverage
+uv run invoke test
+```
+
 ## Project structure
 
 The directory structure of the project looks like this:
