@@ -148,7 +148,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
-In this project we used a third-party framework called `Sentence-Transformers`, a library with access to moderne models for embedding models. We used this to simplify and help make the model and training parts more streamlined with models that we could fine-tune to help with the goal of embedding ArXiv papers based on abstracts and subjects.
+In this project we used a third-party framework called `Sentence-Transformers`, a library with access to modern models for embedding models. We used this to simplify and help make the model and training parts more streamlined with models that we could fine-tune to help with the goal of embedding ArXiv papers based on abstracts and subjects.
 
 ## Coding environment
 
@@ -233,7 +233,7 @@ We've implemented quite a few tests. In total we implemented 6 model tests, 34 d
 >
 > Answer:
 
-The total test coverage of the code is around 93%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainly. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't gurantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edgecase of data, if we are not careful.
+The total test coverage of the code is around 93%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainly. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't guarantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edge case of data, if we are not careful.
 
 ### Question 9
 
@@ -248,7 +248,7 @@ The total test coverage of the code is around 93%. This includes all the current
 >
 > Answer:
 
-We did as much as possible try to use branches and pull requests, if not to not constantly introduce merge commits, then to at least help isolate features to a branch which when done, can be merged into master. We usually just create a new branch when working on something new, for example a google cloud building flow, or an Onnx feature, and then when done, we can merge it into master. We didn't introduce branch safety such as requiring other memebers to go through and review the code, though that can be smart in larger projects with production code that is more vulnerable to breaks.
+We did as much as possible try to use branches and pull requests, if not to not constantly introduce merge commits, then to at least help isolate features to a branch which when done, can be merged into master. We usually just create a new branch when working on something new, for example a google cloud building flow, or an Onnx feature, and then when done, we can merge it into master. We didn't introduce branch safety such as requiring other members to go through and review the code, though that can be smart in larger projects with production code that is more vulnerable to breaks.
 
 ### Question 10
 
@@ -263,7 +263,7 @@ We did as much as possible try to use branches and pull requests, if not to not 
 >
 > Answer:
 
-Yes, `DVC` was set up to allow one to push and pull data from the projects preprocessed part into a cloud bucket with `DVC`. To be fair, it did not have a huge impact on the project to introduce it, but it did streamline the process of moving from/to the cloud. It wouldn't be much harder to utilize the `gcloud` CLI to do it, but at least this introduces version control, and allows sharing the data `.dvc` file over GitHub. Version controlling, including data, will always be valuabel if different data is processed differently, to have a history of data manipulations, or if something breaks the data processsor, one can always recover an earlier, working version of the data.
+Yes, `DVC` was set up to allow one to push and pull data from the projects preprocessed part into a cloud bucket with `DVC`. To be fair, it did not have a huge impact on the project to introduce it, but it did streamline the process of moving from/to the cloud. It wouldn't be much harder to utilize the `gcloud` CLI to do it, but at least this introduces version control, and allows sharing the data `.dvc` file over GitHub. Version controlling, including data, will always be valuable if different data is processed differently, to have a history of data manipulations, or if something breaks the data processor, one can always recover an earlier, working version of the data.
 
 ### Question 11
 
@@ -299,7 +299,7 @@ Yes, we did end up building a complete continuous integration setup. This includ
 >
 > Answer:
 
-To run simple processes like data preprocessing steps, we made use of `Typer`. It's a very simple CLI library from the same author as `FastAPI`. This allowed us to run those files as needed with command line arguments like `uv run src/mlops_project/data.py --num_pairs=50000`. Otherwise, mostly for training, we use HydraConfig. This simply allows to run different configurations, and each will be saved to an `output` folder sepereted by dates and timestamps, allowing a good, albeit poluted, way to organize different experiments. The different configs are seen in the `configs` folder.
+To run simple processes like data preprocessing steps, we made use of `Typer`. It's a very simple CLI library from the same author as `FastAPI`. This allowed us to run those files as needed with command line arguments like `uv run src/mlops_project/data.py --num_pairs=50000`. Otherwise, mostly for training, we use HydraConfig. This simply allows to run different configurations, and each will be saved to an `output` folder separated by dates and timestamps, allowing a good, albeit polluted, way to organize different experiments. The different configs are seen in the `configs` folder.
 
 ### Question 13
 
@@ -346,7 +346,7 @@ Some of the most important things to look for when training is that the loss on 
 >
 > Answer:
 
-Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run either of the docker images locally, one would have to first call `docker build -f dockerfiles/***.dockerfile . -t ***:latest` to build the latest image of either `train.dockerfile` or `api.dockerfile`. To run either, now refer to them by the image name and do `docker run ***:latest` depending on which service. The training script requires authentication with google cloud for secrets, which is infered during google cloud build. If run locally, be sure to be logged in with `gcloud auth`.
+Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run either of the docker images locally, one would have to first call `docker build -f dockerfiles/***.dockerfile . -t ***:latest` to build the latest image of either `train.dockerfile` or `api.dockerfile`. To run either, now refer to them by the image name and do `docker run ***:latest` depending on which service. The training script requires authentication with google cloud for secrets, which is inferred during google cloud build. If run locally, be sure to be logged in with `gcloud auth`.
 
 ### Question 16
 
@@ -378,7 +378,7 @@ When it was convenient, which it usually was, we worked in notebooks to get a fe
 >
 > Answer:
 
-We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, `Vertex AI`, `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available; however, we figured we didn't need CUDA images that were heavy, but rather just CUDA availability, so that saved a lot of time, and allowed for runnign `Vertex AI` scripts; these are configured runs that requests resources, loads up an instance and runs an image, then collects and reports results, and then closes; all in one single swoop. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
+We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, `Vertex AI`, `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available; however, we figured we didn't need CUDA images that were heavy, but rather just CUDA availability, so that saved a lot of time, and allowed for running `Vertex AI` scripts; these are configured runs that requests resources, loads up an instance and runs an image, then collects and reports results, and then closes; all in one single swoop. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
 
 ### Question 18
 
@@ -393,7 +393,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to faciliate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`. The type of VMs we would ideally like to have used, were we to use this service directly, we would mirror our `Vertex AI` setup with GPU instances running a single Nvidia V100 GPUs for training, and otherwise just default CPU setup as in our vertex AI setup.
+We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to facilitate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`. The type of VMs we would ideally like to have used, were we to use this service directly, we would mirror our `Vertex AI` setup with GPU instances running a single Nvidia V100 GPUs for training, and otherwise just default CPU setup as in our vertex AI setup.
 
 ### Question 19
 

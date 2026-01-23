@@ -1,6 +1,4 @@
-# Machine Learning Operations Project
-
-ML Ops Project for 02476 @DTU
+# Machine Learning Operations Project - 02476 @ DTU
 
 <p align="center">
   <img src="figs/embedding_landscape.png" alt="Embedding landscape">
