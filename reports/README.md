@@ -102,7 +102,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
-* [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* [x] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
 * [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
@@ -218,7 +218,7 @@ We introduced quite a few rules for code quality and formatting. Mostly done by 
 >
 > Answer:
 
-We've implemented quite a few tests. In total we implemented 6 model tests, 17 model tests, and X API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses.
+We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a pretty reliable tool.
 
 ### Question 8
 
@@ -233,7 +233,7 @@ We've implemented quite a few tests. In total we implemented 6 model tests, 17 m
 >
 > Answer:
 
-The total test coverage of the code is around 91%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainy. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't gurantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edgecase of data, if we are not careful.
+The total test coverage of the code is around 93%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainy. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't gurantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edgecase of data, if we are not careful.
 
 ### Question 9
 
@@ -314,7 +314,7 @@ To run simple processes like data preprocessing steps, we made use of `Typer`. I
 >
 > Answer:
 
-Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`. Tests were written to do check for it in the data generation.
+Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`. Tests were written to do check for it in the data generation, which can be seen in the pretty volomous `test/test_data.py` file, that really ensures that data generates and conforms to the format we expect it to be in.
 
 ### Question 14
 
@@ -331,7 +331,7 @@ Reproducibility of experiments is indeed an important part. We introduced seeded
 >
 > Answer:
 
-![wandb](figures/wandb.png)
+Some of the most important things to look for when training, is the that the loss on evaluation (and train for that matter) is decreasing. This is a sign that the model _is_ learning something, and that it is correctly aligning data in the embedding space. We furthermore look at some top _k_ metrics like accuracy and recall. These are easier to interpret, and we would ideally like to see this getting lower as well, as the model trains. It usually does this. The different values of _k_ is simply for matrics sake, we should ideally see top10, for example, to be very high, but top1 more volatile during training. An example of a run can be seen right here: ![wandb](figures/wandb.png)
 
 ### Question 15
 
@@ -346,7 +346,7 @@ Reproducibility of experiments is indeed an important part. We introduced seeded
 >
 > Answer:
 
-Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run the docker for serving the fastapi service for using a trained model, run the following code: `docker run api:latest ARGS HERE`.
+Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run either of the docker images locally, one would have to first call `docker build -f dockerfiles/***.dockerfile . -t ***:latest` to build the latest image of either `train.dockerfile` or `api.dockerfile`. To run either, now refer to them by the image name and do `docker run ***:latest` depending on which service. The training script requres authentication with google cloud for secrets, which is infered during google cloud build. If run locally, be sure to be logged in with `gcloud auth`.
 
 ### Question 16
 
@@ -378,7 +378,7 @@ Docker is a powerful tool to create containerized applications. It also serves t
 >
 > Answer:
 
-We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, and `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
+We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, `Vertex AI`, `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available; however, we figured we didn't need CUDA images that were heavy, but rather just CUDA availability, so that saved a lot of time, and allowed for runnign `Vertex AI` scripts; these are configured runs that requests resources, loads up an instance and runs an image, then collects and reports results, and then closes; all in one single swoop. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
 
 ### Question 18
 
@@ -393,7 +393,7 @@ We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Bu
 >
 > Answer:
 
-We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to faciliate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`.
+We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to faciliate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`. The type of VMs we would ideally like to have used, were we to use this service directly, we would mirror our `Vertex AI` setup with GPU instances running a single Nvidia V100 GPUs for training, and otherwise just default CPU setup as in our vertex AI setup.
 
 ### Question 19
 
@@ -402,7 +402,7 @@ We did not really explicitly use Compute Engine, but we did use it through Verte
 >
 > Answer:
 
-![Bucket example here](figures/bucket.png)
+![Bucket example here](figures/bucket.png) ![Bucket example here as well](figures/bucket2.png)
 
 ### Question 20
 
@@ -435,7 +435,7 @@ We did not really explicitly use Compute Engine, but we did use it through Verte
 >
 > Answer:
 
---- question 22 fill here ---
+We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle, as the CUDA image from NVIDIA had a really hard time working, took a very long time to build, and usually failed for odd reasons. We found out simply building without CUDA images, but with a CUDA available GPU, was all that we needed, and we opted for a quick build on the latest stable Ubuntu image with python3.12. This allowed us to run and train the models, and loading/saving in the associated bucket we showed earlier! We also opted for a programmatic approach to secrets managing the `wandb_api_key`, as opposed to a `vertex.yaml` approach with substitution.
 
 ## Deployment
 
@@ -498,7 +498,7 @@ We did not perform any load testing for the API. Load testing, however, is impor
 >
 > Answer:
 
---- question 26 fill here ---
+In short, we set up a simple alert system when the amount of requests (logs) from the API service was above a certain threshold. Mostly this was to illustrate that we know about it.
 
 ## Overall discussion of project
 
@@ -517,7 +517,7 @@ We did not perform any load testing for the API. Load testing, however, is impor
 >
 > Answer:
 
---- question 27 fill here ---
+The most expensive services were generally the `Vertex AI` and also the `Cloud Run` services. This is of course due to renting GPUs on an hourly basis, and running containerized images. We ended up racking up around 100+ (UPDATE THIS TO CURRENT) by the end of this project, which is not too bad, but we also had short training times. Working in the cloud has its perks, that things should just work and are running, but it can be incredibly infuriating when things are not explained well, break down with unreadable error messages, or long wait times just to see a "permission denied" due to a missing role. The prices are also quite high compared to competitors, but it is Google after all.
 
 ### Question 28
 
@@ -533,7 +533,7 @@ We did not perform any load testing for the API. Load testing, however, is impor
 >
 > Answer:
 
---- question 28 fill here ---
+A simple frontend was implemented to serve as a basic "search" for similar papers based on abstract embeddings from the trained model. An example was shown earlier from the API, but for good measure it is shown here again: ![](figures/index.png)
 
 ### Question 29
 
@@ -582,4 +582,4 @@ Most of the frustratings came with working with Google Cloud. The cloud interfac
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-Student s194591 was in charge of the continuous integrations, project structure and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and built images to the cloud.
+Student s194591 was in charge of the continuous integrations, project structure, large parts of the testing and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and setting up auto-building images to the cloud.
