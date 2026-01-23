@@ -74,6 +74,25 @@ Options:
 - `--nprobe`: Clusters to probe at search time (default: 64)
 - `--compile`: Use torch.compile() for faster encoding
 
+### Visualize embeddings
+
+Create a 2D scatter plot of paper embeddings from a FAISS index:
+
+```bash
+uv run python -m mlops_project.visualize \
+  --index-dir data/faiss \
+  --output embedding_landscape.png \
+  --sample-size 50000 \
+  --method umap
+```
+
+Options:
+- `--index-dir`, `-i`: Path to FAISS index directory (default: `data/faiss`)
+- `--output`, `-o`: Output image path (default: `embedding_landscape.png`)
+- `--sample-size`, `-n`: Number of points to visualize (default: 50000)
+- `--method`, `-m`: Dimensionality reduction method: `umap` or `tsne` (default: `umap`)
+- `--seed`: Random seed for reproducibility (default: 42)
+
 ### Train with Docker + CUDA
 
 Build the CUDA training image (fixes Ubuntu base for Python 3.12):
