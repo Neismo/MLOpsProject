@@ -2,6 +2,10 @@
 
 ML Ops Project for 02476 @DTU
 
+<p align="center">
+  <img src="figs/embedding_landscape.png" alt="Embedding landscape">
+</p>
+
 ## Project Description
 
 The goal of this project is to finetune text embedding models on scientific paper titles and abstracts from arXiv in order to learn embeddings that correspond to the papers subject categories. The goal is for papers belonging to the same category to have similar embeddings (based on cosine similarity), while papers from different categories are farther apart. This will be done using a contrastive learning objective, such as ContrastiveLoss or MultipleNegativesRankingLoss, where positive pairs are formed from papers sharing the same subject label and negatives are implicitly sampled from other categories within a batch. Based on the embeddings we can evaluate how many of the closest neighbours are from the same category (precision@k).
