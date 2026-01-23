@@ -550,7 +550,7 @@ A simple frontend was implemented to serve as a basic "search" for similar paper
 >
 > Answer:
 
-An overview of the architecture of our system can be seen here: ![here](figures/overview.png)
+An overview of the architecture of our system can be seen here: ![project overview](figures/diagram.png)
 
 ### Question 30
 
