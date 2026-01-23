@@ -1,7 +1,7 @@
 # Overview
 
 ## Goals and scope
-This project fine tunes [Sentence Transformers](https://www.sbert.net/) models on arXiv titles and abstracts so that
+This project fine tunes [Sentence Transformers](https://www.sbert.net/) (SBERT) models on arXiv titles and abstracts so that
 papers from the same primary subject are close in embedding space, while unrelated subjects move apart. The learned
 embeddings support semantic retrieval, similarity search, and embedding-based classification.
 
@@ -28,6 +28,20 @@ We build similarity search indexes with [FAISS](https://faiss.ai/), export ONNX 
 [FastAPI](https://fastapi.tiangolo.com/) service with `/health` and `/embed`. Dockerized training and inference run
 through CI checks, and we compare larger transformer backbones.
 
+Experiment configuration is handled with [Hydra](https://hydra.cc/docs/intro/), and runs are tracked in
+[Weights & Biases](https://docs.wandb.ai/) to keep results comparable across local and managed training.
+
+Local runs are supported for development, but the project's cloud story assumes GCP as the durable backbone for storage
+and managed training. Dataset state is tracked with DVC and stored in a GCS remote, so the same versioned data snapshot
+can be used by both local experiments and cloud jobs without reprocessing.
+
+Code changes flow through GitHub with pre-commit hooks locally and GitHub Actions for checks. The build job submits
+`cloudbuild.yaml` so Cloud Build can use Docker to build the training image and publish it to Artifact Registry (the
+container registry), then `configs/gpu_train_vertex.yaml` points Vertex AI to that image for GPU runs. The FastAPI
+container can be deployed to Cloud Run for a public endpoint that clients query, while the repository stays available
+for anyone who wants to clone the source and reproduce the workflow. When `meta.use_gcs=true`, training and evaluation
+artifacts can be read from and written to GCS, keeping outputs aligned with the dataset version that produced them.
+
 ## Inputs, outputs, and components
 Inputs are the `title` and `abstract` fields plus subject labels (`primary_subject`, `subjects`). Outputs include
 trained embedding models and ONNX exports, pair datasets for contrastive learning, retrieval and classification
@@ -50,7 +64,7 @@ The stack below is grouped by purpose so you can scan what powers training, serv
 | Area | Tools |
 | --- | --- |
 | Training and acceleration | [PyTorch](https://pytorch.org/docs/stable/index.html), Accelerate |
-| Modeling | Transformers, [Sentence Transformers](https://www.sbert.net/) |
+| Modeling | Transformers, [Sentence Transformers](https://www.sbert.net/) (SBERT) |
 | Data | [Datasets](https://huggingface.co/docs/datasets/) |
 | Config | [Hydra](https://hydra.cc/docs/intro/) |
 | Serving | [FastAPI](https://fastapi.tiangolo.com/), Uvicorn |
