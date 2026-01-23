@@ -11,13 +11,7 @@ RUN sed -i "s/sys_platform == 'linux' or sys_platform == 'win32'/sys_platform ==
     sed -i "s/sys_platform == 'darwin'/sys_platform == 'darwin' or sys_platform == 'linux'/g" pyproject.toml && \
     uv pip install --system -e .
 
-# Bake model and index into image
-COPY faiss-endpoint/model /data/model
-COPY faiss-endpoint/index /data/index
-
-# Environment variables
-ENV MODEL_PATH=/data/model
-ENV INDEX_PATH=/data/index
+# Model and index will be mounted at runtime at /data
 ENV PORT=8000
 
 # Expose port

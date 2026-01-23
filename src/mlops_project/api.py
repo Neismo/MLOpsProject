@@ -57,7 +57,7 @@ def root():
 
 # ---------- Load model once at startup ----------
 
-MODEL_PATH = Path(args.model_path or os.environ.get("MODEL_PATH", "models/contrastive-minilm/"))
+MODEL_PATH = Path(args.model_path or "/data/model")
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -78,20 +78,19 @@ except Exception as e:
 
 # ---------- Load FAISS index (optional) ----------
 
-INDEX_PATH = args.index_path or os.environ.get("INDEX_PATH")
-PRELOAD_METADATA = os.environ.get("PRELOAD_METADATA", "false").lower() in ("true", "1", "yes")
+INDEX_PATH = Path(args.index_path or "/data/index")
+# METADATA_SOURCE: "json", "sqlite", or unset for auto-detect
+METADATA_SOURCE = os.environ.get("METADATA_SOURCE")
 faiss_index: FAISSIndex | None = None
 
-if INDEX_PATH:
-    index_path = Path(INDEX_PATH)
-    if index_path.exists():
-        try:
-            faiss_index = FAISSIndex.load(index_path, preload_metadata=PRELOAD_METADATA)
-            logger.info(f"FAISS index loaded from {index_path} (preload_metadata={PRELOAD_METADATA})")
-        except Exception as e:
-            logger.warning(f"Failed to load FAISS index: {e}")
-    else:
-        logger.warning(f"FAISS index path does not exist: {index_path}")
+if INDEX_PATH.exists():
+    try:
+        faiss_index = FAISSIndex.load(INDEX_PATH, metadata_source=METADATA_SOURCE)
+        logger.info(f"FAISS index loaded from {INDEX_PATH} (metadata_source={METADATA_SOURCE or 'auto'})")
+    except Exception as e:
+        logger.warning(f"Failed to load FAISS index: {e}")
+else:
+    logger.warning(f"FAISS index path does not exist: {INDEX_PATH}")
 
 
 # ---------- Request / Response schemas ----------
@@ -171,7 +170,7 @@ def search_similar(request: SearchRequest) -> SearchResponse:
         REQUEST_COUNT.labels(endpoint="/search", method="POST", status_code=503).inc()
         raise HTTPException(
             status_code=503,
-            detail="FAISS index not loaded. Set INDEX_PATH environment variable or --index-path argument.",
+            detail="FAISS index not loaded. Mount data to /data or use --index-path argument.",
         )
 
     if not request.abstract.strip():

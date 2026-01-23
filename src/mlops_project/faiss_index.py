@@ -188,14 +188,19 @@ class FAISSIndex:
         logger.info("Save complete")
 
     @classmethod
-    def load(cls, index_dir: str | Path, nprobe: int | None = None, preload_metadata: bool = False) -> "FAISSIndex":
+    def load(
+        cls,
+        index_dir: str | Path,
+        nprobe: int | None = None,
+        metadata_source: str | None = None,
+    ) -> "FAISSIndex":
         """Load a FAISS index from disk.
 
         Args:
             index_dir: Directory containing index.faiss and (metadata.db or metadata.json).
             nprobe: Override nprobe value (uses saved value if None).
-            preload_metadata: If True, load all metadata into memory at startup (faster queries, more RAM).
-                              If False, query SQLite on each search (slower queries, less RAM).
+            metadata_source: "json" to load from metadata.json, "sqlite" to query metadata.db
+                             at search time, or None to auto-detect (prefers sqlite if exists).
 
         Returns:
             Loaded FAISSIndex instance.
@@ -215,44 +220,40 @@ class FAISSIndex:
         saved_nprobe = cls.DEFAULT_NPROBE
         db_path: Path | None = None
 
-        if db_path_candidate.exists():
-            if preload_metadata:
-                # Preload all metadata into memory for faster queries
-                logger.info(f"Preloading metadata from SQLite: {db_path_candidate}")
-                conn = sqlite3.connect(db_path_candidate)
-                cur = conn.execute(
-                    "SELECT id, title, abstract, primary_subject, subjects, arxiv_id FROM papers ORDER BY id"
-                )
-                for row in cur:
-                    idx, title, abstract, primary_subject, subjects, arxiv_id = row
-                    metadata.append(
-                        {
-                            "title": title,
-                            "abstract": abstract,
-                            "primary_subject": primary_subject,
-                            "subjects": subjects.split("; ") if subjects else [],
-                            "arxiv_id": arxiv_id,
-                        }
-                    )
-                conn.close()
-                logger.info(f"Preloaded {len(metadata):,} entries into memory")
+        # Determine metadata source
+        if metadata_source is None:
+            # Auto-detect: prefer sqlite if exists
+            if db_path_candidate.exists():
+                metadata_source = "sqlite"
+            elif metadata_path.exists():
+                metadata_source = "json"
             else:
-                # Use SQLite queries at search time
-                logger.info(f"Using SQLite database: {db_path_candidate}")
-                db_path = db_path_candidate
+                raise FileNotFoundError(f"Neither {db_path_candidate} nor {metadata_path} found")
+
+        if metadata_source == "json":
+            if not metadata_path.exists():
+                raise FileNotFoundError(f"JSON metadata not found: {metadata_path}")
+            logger.info(f"Loading metadata from {metadata_path}")
+            t0 = time.perf_counter()
+            with open(metadata_path) as f:
+                data = json.load(f)
+            metadata = data["metadata"]
+            saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
+            elapsed = time.perf_counter() - t0
+            logger.info(f"Loaded {len(metadata):,} entries from JSON in {elapsed:.1f}s")
+        elif metadata_source == "sqlite":
+            if not db_path_candidate.exists():
+                raise FileNotFoundError(f"SQLite database not found: {db_path_candidate}")
+            # Use SQLite queries at search time
+            logger.info(f"Using SQLite database: {db_path_candidate}")
+            db_path = db_path_candidate
             # Get nprobe from JSON if it exists
             if metadata_path.exists():
                 with open(metadata_path) as f:
                     data = json.load(f)
                 saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
-        elif metadata_path.exists():
-            logger.info(f"Loading metadata from {metadata_path}")
-            with open(metadata_path) as f:
-                data = json.load(f)
-            metadata = data["metadata"]
-            saved_nprobe = data.get("nprobe", cls.DEFAULT_NPROBE)
         else:
-            raise FileNotFoundError(f"Neither {db_path_candidate} nor {metadata_path} found")
+            raise ValueError(f"Invalid metadata_source: {metadata_source}. Use 'json' or 'sqlite'.")
 
         effective_nprobe = nprobe if nprobe is not None else saved_nprobe
         logger.info(f"Index loaded: {index.ntotal:,} vectors, nprobe={effective_nprobe}")
