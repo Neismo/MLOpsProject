@@ -1,8 +1,10 @@
+import os
 import sys
 from pathlib import Path
 
 import hydra
 import torch
+from google.cloud import secretmanager
 from hydra.utils import get_original_cwd
 from loguru import logger
 from sentence_transformers import SentenceTransformerTrainer, SentenceTransformerTrainingArguments
@@ -19,6 +21,13 @@ logger.add(sys.stdout, level="INFO")
 logger.add("train.log", level="DEBUG", rotation="5 MB")
 
 
+def _read_secret(secret_id: str, project_id: str, version: str = "latest") -> str:
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version}"
+    resp = client.access_secret_version(request={"name": name})
+    return resp.payload.data.decode("utf-8").strip()
+
+
 @hydra.main(version_base="1.3", config_path="../../configs", config_name="train_config")
 def train(config):
     logger.debug(f"Training config:\n{config}")
@@ -30,7 +39,23 @@ def train(config):
     elif not torch.cuda.is_available():
         logger.warning("CUDA not available. Continuing on CPU.")
 
-    data_dir = Path(f"{get_original_cwd()}/data")
+    # Load WANDB_API_KEY from Secret Manager if W&B is enabled
+    if config.wandb.enabled:
+        try:
+            project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "mlopsproject-484419")
+            wandb_key = _read_secret("WANDB_API_KEY", project_id)
+            os.environ["WANDB_API_KEY"] = wandb_key
+            logger.info("Loaded WANDB_API_KEY from Secret Manager.")
+        except Exception as e:
+            logger.warning(f"Failed to load WANDB_API_KEY from Secret Manager: {e}")
+            logger.warning("Disabling W&B logging for this run.")
+            os.environ["WANDB_DISABLED"] = "true"
+            config.wandb.enabled = False
+
+    if config.meta.use_gcs:
+        data_dir = Path(f"/gcs/{config.meta.bucket_name}/data")
+    else:
+        data_dir = Path(f"{get_original_cwd()}/data")
     ensure_data_exists(data_dir, config)
 
     test_dataset = ArxivPapersDataset("test", data_dir=data_dir).dataset
@@ -58,6 +83,13 @@ def train(config):
     if not config.wandb.enabled:
         logger.info("W&B logging disabled (config.wandb.enabled=false).")
 
+    # Save model to GCS or locally
+    if config.meta.use_gcs:
+        logger.info("Using GCS for data storage (config.meta.use_gcs=true).")
+        output_dir = f"/gcs/{config.meta.bucket_name}"
+    else:
+        output_dir = f"{get_original_cwd()}"
+
     # Build output directory name from config
     output_dir_name = build_output_dir_name(
         model=config.train.model,
@@ -68,7 +100,7 @@ def train(config):
 
     # Define training arguments
     training_args = SentenceTransformerTrainingArguments(
-        output_dir=f"{get_original_cwd()}/models/{output_dir_name}",
+        output_dir=f"{output_dir}/models/{output_dir_name}",
         num_train_epochs=config.train.epochs,
         per_device_train_batch_size=config.train.batch_size,
         per_device_eval_batch_size=config.train.batch_size,
