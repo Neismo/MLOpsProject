@@ -1,0 +1,103 @@
+site_name: MLOps Project
+site_author: DeepBois
+site_description: Contrastive embeddings for arXiv papers with an end to end MLOps pipeline.
+docs_dir: docs/source
+repo_url: https://github.com/Neismo/MLOpsProject
+repo_name: Neismo/MLOpsProject
+edit_uri: blob/master/docs/source/
+
+theme:
+  name: material
+  language: en
+  font:
+    text: Space Grotesk
+    code: IBM Plex Mono
+  palette:
+    - scheme: slate
+      primary: blue grey
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: blue grey
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+    - toc.integrate
+    - content.action.view
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+plugins:
+  - search
+  - tags
+  - git-revision-date-localized:
+      type: timeago
+      fallback_to_build_date: true
+  - minify:
+      minify_html: true
+  - mermaid2
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            show_root_heading: true
+            separate_signature: true
+            show_signature_annotations: true
+            show_source: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 2-2
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Project:
+      - Home: index.md
+      - Quickstart: quickstart.md
+      - Overview: overview.md
+      - Data and Preprocessing: data.md
+      - Training: training.md
+      - Evaluation: evaluation.md
+      - API and Deployment: api.md
+  - Ops:
+      - Configuration: configuration.md
+      - MLOps Stack: ops.md
+  - Reference:
+      - Project Structure: project-structure.md
+      - Python API: reference.md
+      - API Module Notes: reference/api.md
+      - Tags: tags.md

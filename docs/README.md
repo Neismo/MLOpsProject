@@ -1,12 +1,14 @@
 Generating the docs
 ----------
 
-Use [mkdocs](http://www.mkdocs.org/) structure to update the documentation.
+Use [MkDocs](https://www.mkdocs.org/) with
+[MkDocs Material](https://squidfunk.github.io/mkdocs-material/) to update the documentation. This repository uses
+[uv](https://docs.astral.sh/uv/getting-started/installation/) to run commands.
 
 Build locally with:
 
-    mkdocs build
+    uv run mkdocs build -f mkdocs.yaml
 
 Serve locally with:
 
-    mkdocs serve
+    uv run mkdocs serve -f mkdocs.yaml
