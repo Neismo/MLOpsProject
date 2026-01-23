@@ -173,15 +173,6 @@ uv run invoke train
 
 # Run tests with coverage
 uv run invoke test
-
-# Build Docker images
-uv run invoke docker-build
-
-# Build documentation
-uv run invoke build-docs
-
-# Serve documentation locally
-uv run invoke serve-docs
 ```
 
 ## Project structure
