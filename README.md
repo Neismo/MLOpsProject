@@ -8,11 +8,11 @@ ML Ops Project for 02476 @DTU
 
 ## Project Description
 
-The goal of this project is to finetune text embedding models on scientific paper titles and abstracts from arXiv in order to learn embeddings that correspond to the papers subject categories. The goal is for papers belonging to the same category to have similar embeddings (based on cosine similarity), while papers from different categories are farther apart. This will be done using a contrastive learning objective, such as ContrastiveLoss or MultipleNegativesRankingLoss, where positive pairs are formed from papers sharing the same subject label and negatives are implicitly sampled from other categories within a batch. Based on the embeddings we can evaluate how many of the closest neighbours are from the same category (precision@k).
+The goal of this project is to finetune text embedding models on scientific paper titles and abstracts from arXiv in order to learn embeddings that correspond to the papers subject categories. Papers belonging to the same category have similar embeddings (based on cosine similarity), while papers from different categories are farther apart. This is achieved using a contrastive learning objective (MultipleNegativesRankingLoss), where positive pairs are formed from papers sharing the same subject label and negatives are implicitly sampled from other categories within a batch.
 
-Based on the learned embeddings, we will train a lightweight classifier (logistic regression) to predict the subject category of a paper. This allows us to evaluate the quality of the embeddings quantitatively through classification accuracy and related metrics. In addition, the embeddings will be used to perform similarity search using cosine similarity, enabling the retrieval of the most semantically similar papers given a title or abstract. Together, these tasks allow us to assess whether the learned representations are useful both for categorization and for content-based paper discovery.
+The quality of embeddings is evaluated using information retrieval metrics including precision@k, recall@k, MRR (Mean Reciprocal Rank), MAP (Mean Average Precision), and NDCG (Normalized Discounted Cumulative Gain). The embeddings are used to perform similarity search, enabling the retrieval of the most semantically similar papers given an abstract. This demonstrates that the learned representations are useful for content-based paper discovery.
 
-For deployment we plan to make a FastAPI endpoint running in a docker container. We plan to experiment using ONNX as the runtime. We are also interested in using a specific library for similarity search across all our samples, such as FAISS.
+For deployment, we use a FastAPI application running in a Docker container. Similarity search is powered by FAISS (Facebook AI Similarity Search) with an IVF index for efficient nearest-neighbor lookup across all indexed papers.
 
 ## Documentation
 
@@ -40,20 +40,41 @@ The documentation will be available at `http://127.0.0.1:8000/`
 
 ## Frameworks
 
-The project will be implemented in `Python` using `PyTorch` as the deep learning backend. We will use the `sentence-transformers` library to handle transformer-based embedding models, loss functions for contrastive learning, and evaluation utilities. Experiment tracking and metric logging will be handled with `Weights & Biases (WandB)` to enable comparison between different model configurations and training runs. `Hydra` will be used for configuration management, allowing us to define datasets, model parameters, and training settings in a modular and reproducible way.
+The project is implemented in `Python` using `PyTorch` as the deep learning backend. We use the `sentence-transformers` library to handle transformer-based embedding models, loss functions for contrastive learning, and evaluation utilities. Experiment tracking and metric logging is handled with `Weights & Biases (WandB)` to enable comparison between different model configurations and training runs. `Hydra` is used for configuration management, allowing us to define datasets, model parameters, and training settings in a modular and reproducible way.
 
 ## Data
 
-We will use the arXiv papers [dataset](https://huggingface.co/datasets/nick007x/arxiv-papers), using the title, abstract, and subject (primary category) fields. The subject labels will be used for both the contrastive embedding training and the classification task. For early experiments, we may restrict the dataset to a subset of high-level categories or limit the number of samples per category to reduce computational cost and class imbalance. The same dataset will be used for two main tasks:
-
-1. Predicting the subject category of a paper based on its text
-2. Retrieving semantically similar papers using embedding-based similarity search
+We use the arXiv papers [dataset](https://huggingface.co/datasets/nick007x/arxiv-papers), using the title, abstract, and subject (primary category) fields. The subject labels are used for contrastive embedding training, where papers from the same category form positive pairs. The dataset is balanced by limiting samples per category to reduce class imbalance.
 
 ### To download and create dataset
 
 ```bash
 uv run python -m mlops_project.data
 ```
+
+### Build FAISS index
+
+After training a model, build a FAISS index for similarity search:
+
+```bash
+# Build index with default settings
+uv run python -m mlops_project.build_index
+
+# Custom model and output paths
+uv run python -m mlops_project.build_index \
+  --model-path models/your-model \
+  --output-dir data/faiss \
+  --batch-size 256
+```
+
+Options:
+- `--model-path`, `-m`: Path to trained SentenceTransformer model
+- `--output-dir`, `-o`: Output directory for index files (default: `data/faiss`)
+- `--batch-size`, `-b`: Batch size for encoding (default: 256)
+- `--splits`, `-s`: Dataset splits to index (default: train, eval, test)
+- `--nlist`: Number of IVF clusters (default: 4096)
+- `--nprobe`: Clusters to probe at search time (default: 64)
+- `--compile`: Use torch.compile() for faster encoding
 
 ### Train with Docker + CUDA
 
@@ -83,60 +104,129 @@ docker run --rm --gpus all \
 
 A docker image is automatically built when pushed to the `build` branch if `format + lint` and `tests` actions pass via a GitHub action workflow using the Google Cloud Build. A branch was specifically set up for this to avoid wasting many minutes, as each build can, without optimization of any sorts, take up towards 20 minutes before completion.
 
+## API
+
+The project includes a FastAPI application for generating embeddings and performing similarity search.
+
+### Running the API locally
+
+```bash
+# Run with uvicorn (requires model at specified path)
+uv run uvicorn mlops_project.api:app --host 0.0.0.0 --port 8000 --model-path ./models/your-model
+
+# Or set paths via environment variables
+MODEL_PATH=./models/your-model INDEX_PATH=./data/faiss uv run uvicorn mlops_project.api:app
+```
+
+### Running with Docker
+
+```bash
+# Build the API image
+docker build -f dockerfiles/api.dockerfile -t mlops-api .
+
+# Run with model and index mounted
+docker run --rm -p 8000:8000 \
+  -v ${PWD}/models/your-model:/data/model \
+  -v ${PWD}/data/faiss:/data/index \
+  mlops-api
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check, returns status and device (cpu/cuda) |
+| `/embed` | POST | Generate embedding for an abstract |
+| `/search` | POST | Find similar papers using FAISS index |
+| `/metrics` | GET | Prometheus metrics |
+| `/` | GET | Web UI for interactive search |
+
+### Example requests
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Generate embedding
+curl -X POST http://localhost:8000/embed \
+  -H "Content-Type: application/json" \
+  -d '{"abstract": "We study neural network optimization..."}'
+
+# Search for similar papers (requires FAISS index)
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"abstract": "We study neural network optimization...", "k": 5}'
+```
+
 ## Models
 
-We plan to use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. Depending on available training time and resources, we will also experiment with larger and more expressive models, such as [all-mpnet-base-v2](https://huggingface.co/sentence-transformers/all-mpnet-base-v2), to compare how model scale impacts embedding quality and downstream performance.
-
-As a baseline we are also considering TF-IDF with linear classification.
+We use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. We also experimented with [ModernBERT](https://huggingface.co/answerdotai/ModernBERT-base) to compare how model scale impacts embedding quality and downstream performance.
 
 ## Project structure
 
 The directory structure of the project looks like this:
 ```txt
-├── .dvc/
-│   ├── config
 ├── .github/                  # Github actions and dependabot
-│   ├── dependabot.yaml
 │   └── workflows/
 │       ├── docs.yml
-│       ├── lint-test-build.yml
-│       └── pre-commit-update.yml
+│       ├── lint-test-build.yaml
+│       └── pre-commit-update.yaml
 ├── configs/                  # Configuration files
 │   ├── dataset.yaml
 │   ├── gpu_train_vertex.yaml
 │   └── train_config.yaml
-├── data/                     # Data directory
+├── data/                     # Data directory (DVC tracked)
 │   ├── train_pairs/
 │   ├── eval_pairs/
 │   └── test/
 ├── dockerfiles/              # Dockerfiles
-│   ├── api.Dockerfile
-│   └── train.Dockerfile
+│   ├── api.dockerfile
+│   └── train.dockerfile
 ├── docs/                     # Documentation
 │   ├── README.md
 │   └── source/
-│       └── index.md
+│       ├── api.md
+│       ├── configuration.md
+│       ├── data.md
+│       ├── evaluation.md
+│       ├── index.md
+│       ├── ops.md
+│       ├── overview.md
+│       ├── project-structure.md
+│       ├── quickstart.md
+│       ├── reference.md
+│       ├── tags.md
+│       └── training.md
+├── figs/                     # Figures for README
 ├── models/                   # Trained models
 ├── notebooks/                # Jupyter notebooks
 ├── reports/                  # Reports
-│   ├── figures/
 │   ├── README.md
 │   └── report.py
+├── scripts/                  # Utility scripts
+│   ├── load_test.py
+│   └── load_test_health.py
 ├── src/                      # Source code
-│   ├── project_name/
-│   │   ├── __init__.py
-│   │   ├── api.py
-│   │   ├── data.py
-│   │   ├── evaluate.py
-│   │   ├── models.py
-│   │   ├── train.py
-│   │   ├── utils.py
-│   │   └── visualize.py
-└── tests/                    # Tests
+│   └── mlops_project/
+│       ├── __init__.py
+│       ├── api.py
+│       ├── build_index.py
+│       ├── data.py
+│       ├── evaluate.py
+│       ├── faiss_index.py
+│       ├── metrics.py
+│       ├── model.py
+│       ├── train.py
+│       ├── utils.py
+│       ├── visualize.py
+│       └── static/
+│           └── index.html
+├── tests/                    # Tests
 │   ├── __init__.py
 │   ├── conftest.py
 │   ├── test_api.py
 │   ├── test_data.py
+│   ├── test_faiss_index.py
 │   └── test_model.py
 ├── .dockerignore
 ├── .dvcignore
@@ -144,12 +234,12 @@ The directory structure of the project looks like this:
 ├── .pre-commit-config.yaml
 ├── LICENSE
 ├── pyproject.toml            # Python project file
-├── coudbuild.yaml
+├── cloudbuild.yaml           # Google Cloud Build config
 ├── README.md                 # Project README
-├── data.dvc
-├── mkdocs.yaml
-├── uv.lock
-└── tasks.py                  # Project tasks
+├── data.dvc                  # DVC file for data tracking
+├── mkdocs.yaml               # MkDocs configuration
+├── uv.lock                   # uv lockfile
+└── tasks.py                  # Invoke tasks
 ```
 
 
