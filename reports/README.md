@@ -60,10 +60,10 @@ will check the repositories and the code to verify your answers.
 * [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
 * [x] Remember to either fill out the `requirements.txt`/`requirements_dev.txt` files or keeping your
     `pyproject.toml`/`uv.lock` up-to-date with whatever dependencies that you are using (M2+M6)
-* [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+* [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [x] Do a bit of code typing and remember to document essential parts of your code (M7)
 * [x] Setup version control for your data or part of your data (M8)
-* [ ] Add command line interfaces and project commands to your code where it makes sense (M9)
+* [x] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [x] Construct one or multiple docker files for your code (M10)
 * [x] Build the docker files locally and make sure they work as intended (M10)
 * [x] Write one or multiple configurations files for your experiments (M11)
@@ -77,7 +77,7 @@ will check the repositories and the code to verify your answers.
 ### Week 2
 
 * [x] Write unit tests related to the data part of your code (M16)
-* [ ] Write unit tests related to model construction and or model training (M16)
+* [x] Write unit tests related to model construction and or model training (M16)
 * [x] Calculate the code coverage (M16)
 * [x] Get some continuous integration running on the GitHub repository (M17)
 * [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
@@ -87,34 +87,34 @@ will check the repositories and the code to verify your answers.
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19)
 * [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
 * [x] Create a trigger workflow for automatically building your docker images (M21)
-* [ ] Get your model training in GCP using either the Engine or Vertex AI (M21)
-* [ ] Create a FastAPI application that can do inference using your model (M22)
-* [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
-* [ ] Write API tests for your application and setup continues integration for these (M24)
-* [ ] Load test your application (M24)
-* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
-* [ ] Create a frontend for your API (M26)
+* [x] Get your model training in GCP using either the Engine or Vertex AI (M21)
+* [x] Create a FastAPI application that can do inference using your model (M22)
+* [x] Deploy your model in GCP using either Functions or Run as the backend (M23)
+* [x] Write API tests for your application and setup continues integration for these (M24)
+* [x] Load test your application (M24)
+* [x] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+* [x] Create a frontend for your API (M26)
 
 ### Week 3
 
 * [ ] Check how robust your model is towards data drifting (M27)
 * [ ] Setup collection of input-output data from your deployed application (M27)
 * [ ] Deploy to the cloud a drift detection API (M27)
-* [ ] Instrument your API with a couple of system metrics (M28)
-* [ ] Setup cloud monitoring of your instrumented application (M28)
-* [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* [x] Instrument your API with a couple of system metrics (M28)
+* [x] Setup cloud monitoring of your instrumented application (M28)
+* [x] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
-* [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+* [x] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
 
 ### Extra
 
-* [ ] Write some documentation for your application (M32)
-* [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
-* [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
-* [ ] Uploaded all your code to GitHub
+* [x] Write some documentation for your application (M32)
+* [x] Publish the documentation to GitHub Pages (M32)
+* [x] Revisit your initial project description. Did the project turn out as you wanted?
+* [x] Create an architectural diagram over your MLOps pipeline
+* [x] Make sure all group members have an understanding about all parts of the project
+* [x] Uploaded all your code to GitHub
 
 ## Group information
 
@@ -148,7 +148,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 3 fill here ---
+In this project we used a third-party framework called `Sentence-Transformers`, a library with access to moderne models for embedding models. We used this to simplify and help make the model and training parts more streamlined with models that we could fine-tune to help with the goal of embedding ArXiv papers based on abstracts and subjects.
 
 ## Coding environment
 
@@ -168,7 +168,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 4 fill here ---
+We used UV to help manage all our dependencies; it is a modern and fast framework. We used it to streamline adding and updating packages we need between members, with a `pyproject.toml` and `uv.lock` making sure the exact same setup was used across our group. We served our code over `GitHub`, to help share code easily and manage any conflicts in approach we might have run into. To get a complete setup ready to go, one should with access to our repository on GitHub, and assuming UV is installed: `git clone REPO`, `cd MLOpsProject`, `uv sync`, `uv run src/mlops_project/data.py` to be ready and have all data processed. Unless Wandb logging is not wished, one should also `wandb logging` if not already done.
 
 ### Question 5
 
@@ -184,7 +184,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 5 fill here ---
+We did indeed initialize the project with a cookiecutter template, specifially the one [found here from the course](https://github.com/SkafteNicki/mlops_template). In this we filled out the `src/mlops_project`, `configs`, `data`, `tests`, and `dockerfiles`. We cache models in `models`, but that is done locally. When training, an `outputs` folder from `Hydra` is emitted with experiments, but that is not shared; as an extra, the training script allows for wandb logging (default). We have a few extra files for `dvc` and Google Cloud. We also have a few extra source files to help give more structure; for example `metrics.py`, `faiss_index.py`, and `index.py`, which is related to our API.
 
 ### Question 6
 
@@ -199,7 +199,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 6 fill here ---
+We introduced quite a few rules for code quality and formatting. Mostly done by `Ruff` for linting/formatting and `Mypy` for type-checking; this is with pre-commit and in github action workflows both. NOAH MKDOCS HERE. In small projects, these can seem annoying, as checkers like `Mypy` can be really strict, and linters/formatters can make code "less" readable as opposed to how oneself writes. The purpose of these become much clearer when working in larger projects across longer times. They help provide a shared format of code, and makes sure the code is as self-documenting as possible. You can glance the input and return-types easily, without having to guess based on variable names. This can save considerable time and frustration when working with older code or code others have written.
 
 ## Version control
 
@@ -218,7 +218,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 7 fill here ---
+We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a reliable framework, building on top of Hugginface Trainer interface.
 
 ### Question 8
 
@@ -233,7 +233,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 8 fill here ---
+The total test coverage of the code is around 93%. This includes all the current source code found in `src/mlops_project/`. We aren't far from 100%, but the few different parts are entry points that simply run the different parts of the code we test, for example the `if __name__ == '__main__':` parts mainy. These entrypoints are usually run from the CLI and only serves to run a function like `preprocess` for data, that we test anyways. Say though that the code coverage was 100%, then we couldn't gurantee that our code runs without errors hencefourth. Usually in tests, we also "mock" data (see `tests/conftest.py`) and that means that we might miss an edgecase of data, if we are not careful.
 
 ### Question 9
 
@@ -248,7 +248,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 9 fill here ---
+We did as much as possible try to use branches and pull requests, if not to not constantly introduce merge commits, then to at least help isolate features to a branch which when done, can be merged into master. We usually just create a new branch when working on something new, for example a google cloud building flow, or an Onnx feature, and then when done, we can merge it into master. We didn't introduce branch safety such as requiring other memebers to go through and review the code, though that can be smart in larger projects with production code that is more vulnerable to breaks.
 
 ### Question 10
 
@@ -263,7 +263,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, `DVC` was set up to allow one to push and pull data from the projects preprocessed part into a cloud bucket with `DVC`. To be fair, it did not have a huge impact on the project to introduce it, but it did streamline the process of moving from/to the cloud. It wouldn't be much harder to utilize the `gcloud` CLI to do it, but at least this introduces version control, and allows sharing the data `.dvc` file over GitHub. Version controlling, including data, will always be valuabel if different data is processed differently, to have a history of data manipulations, or if something breaks the data processsor, one can always recover an earlier, working version of the data.
 
 ### Question 11
 
@@ -280,7 +280,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 11 fill here ---
+Yes, we did end up building a complete continuous integration setup. This included a combination of linting with `Ruff`, formatting with `Ruff` and type-checking with a github action mirror of `Mypy`. We also run `pytest` across windows, ubuntu and macos (latest) to ensure it builds on all the three OS - which are also covered by the individual members of the group. These are "just" mirrors of the pre-commit setup, making sure that we conform to the same standards across our project. We used cache mounting to help speed up the actions as much as possible between runs, as they are mostly identical. We also added a complete `build` step for building our docker image for training in google cloud. This required an authenticated workflow with a service account. This step was considerably slower than the rest, as CUDA images are expensive to build. In case we couldn't cache, we wanted to reduce the amount of time spent doing this. This meant we approached differently at some point, by making sure we did more feature branches and PRs to not build as many images every time a small change was pushed. We do not test across multiple python version as we simply require python 3.12 as the only we use. It is generally best to enforce a single major python version in larger projects. An example of a complete triggered workflow can be seen [here](https://github.com/Neismo/MLOpsProject/actions/runs/21245846868).
 
 ## Running code and tracking experiments
 
@@ -299,7 +299,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 12 fill here ---
+To run simple processes like data preprocessing steps, we made use of `Typer`. It's a very simple CLI library from the same author as `FastAPI`. This allowed us to run those files as neede with command line arguments like `uv run src/mlops_project/data.py --num_pairs=50000`. Otherwise, mostly for training, we use HydraConfig. This simply allows to run different configurations, and each will be saved to an `output` folder sepereted by dates and timestamps, allowing a good, albeit poluted, way to organize different experiments. The different configs are seen in the `configs` folder.
 
 ### Question 13
 
@@ -314,7 +314,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 13 fill here ---
+Reproducibility of experiments is indeed an important part. We introduced seeded runs to help make sure that our experiments were reproducible. These are seen in the different configs. These config files also include different parameters such as the number of training and testing pairs, which loss type we are using, `batch_size` et cetera. To reproduce a run, one would have to look at the config file, at set the appropriate parts to the values, most importantly being the `batch_size`, `seed` and `loss`. Tests were written to do check for it in the data generation, which can be seen in the pretty volomous `test/test_data.py` file, that really ensures that data generates and conforms to the format we expect it to be in.
 
 ### Question 14
 
@@ -331,7 +331,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 14 fill here ---
+Some of the most important things to look for when training is that the loss on evaluation (and train for that matter) is decreasing. This is a sign that the model _is_ learning something, and that it is correctly aligning data in the embedding space. A decreasing loss indicates the model is pushing similar abstracts closer together while separating dissimilar ones in the vector space. We furthermore look at some top _k_ metrics like accuracy and recall. These are easier to interpret, and we would ideally like to see these increasing as the model trains. It usually does this. The different values of _k_ (e.g., top1, top5, top10) help us understand retrieval quality at different granularities. top10 should be high indicating good general retrieval, while top1 being more volatile during training reflects the difficulty of exact matching. We also track the learning rate schedule and batch processing times to ensure training is progressing smoothly without any bottlenecks. Additionally, W&B allows us to compare multiple runs side-by-side, which was useful when experimenting with different loss functions (MultipleNegativesRankingLoss vs others) and hyperparameters like batch size and learning rate. The platform also made it easy to share results with team members. An example of a run can be seen right here: ![wandb](figures/wandb.png)
 
 ### Question 15
 
@@ -346,7 +346,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 15 fill here ---
+Docker is a powerful tool to create containerized applications. It also serves to help reduce the problems of some code running and working on one machine, but fails in another. We've used docker mostly to demonstrate our knowledge of it, but not so much practically. We build two docker images; one for training with CUDA, and one for serving a model over a FastAPI application. To run either of the docker images locally, one would have to first call `docker build -f dockerfiles/***.dockerfile . -t ***:latest` to build the latest image of either `train.dockerfile` or `api.dockerfile`. To run either, now refer to them by the image name and do `docker run ***:latest` depending on which service. The training script requres authentication with google cloud for secrets, which is infered during google cloud build. If run locally, be sure to be logged in with `gcloud auth`.
 
 ### Question 16
 
@@ -361,7 +361,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 16 fill here ---
+When it was convenient, which it usually was, we worked in notebooks to get a feeling for the flow, how input and output was to the various third party packages, and how interfacing between them were done. This gives a good overview and quick way to test stuff, after which it could be added to scripts where it mimicked what we did in those. Some things weren't always clear, for example we could build CUDA images locally which worked, but failed in the cloud. These were a bit harder to debug other than trying to discern the error, fix it, and try again.
 
 ## Working in the cloud
 
@@ -378,7 +378,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following google cloud services: `Engine`, `Bucket`, `Registry`, `Build`, `Vertex AI`, `Run`. `Engine` allowed us to do runs of our built training CUDA images, and to do training loops. As previously stated, we opted to do local or HPC runs instead, as we had resources for it, and running over cloud can be expensive, when free alternatives that work are available; however, we figured we didn't need CUDA images that were heavy, but rather just CUDA availability, so that saved a lot of time, and allowed for runnign `Vertex AI` scripts; these are configured runs that requests resources, loads up an instance and runs an image, then collects and reports results, and then closes; all in one single swoop. `Bucket` is for storing our data and models; this could be synced with `DVC` or manually with `gcloud` CLI. The buckets can be mounted to run images, which is very convenient when training and having to save/load data and models. `Registry` and `Build` was used when pushing to the master branch to build the docker images and push them to the registry, where we could build and serve them using the `Run` service for the public REST API.
 
 ### Question 18
 
@@ -393,7 +393,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 18 fill here ---
+We did not really explicitly use Compute Engine, but we did use it through Vertex AI. We used instances utilizing the NVIDIA GPU V100 to faciliate training our embedding models based on the data stored in the bucket. We use the docker image found in `dockerfiles/train.dockerfile` to built an image with CUDA simply training through `src/mlops_project/train.py`. The type of VMs we would ideally like to have used, were we to use this service directly, we would mirror our `Vertex AI` setup with GPU instances running a single Nvidia V100 GPUs for training, and otherwise just default CPU setup as in our vertex AI setup.
 
 ### Question 19
 
@@ -402,7 +402,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 19 fill here ---
+![Bucket example here](figures/bucket.png) ![Bucket example here as well](figures/bucket2.png)
 
 ### Question 20
 
@@ -411,7 +411,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 20 fill here ---
+![Artifact registry example here](figures/registry.png)
 
 ### Question 21
 
@@ -420,7 +420,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 21 fill here ---
+![Cloud build example here](figures/build.png)
 
 ### Question 22
 
@@ -435,7 +435,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 22 fill here ---
+We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle at first, as getting the CUDA image from NVIDIA working was challenging, but we were able to get it to work by using a cuDNN image on the latest stable Ubuntu image with Python 3.12. This allowed us to run and train the models on cloud GPUs, and load and save them in the associated bucket we showed earlier. We also opted for a programmatic approach to secrets, managing the `wandb_api_key` through Google Secret Manager, as opposed to a `vertex.yaml` approach with substitution shown in exercises.
 
 ## Deployment
 
@@ -452,7 +452,11 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 23 fill here ---
+We have written and deployed an API for our embeddings model through the `Cloud Run` services. For this, FastAPI was used. We also have a simple front-end to go with it, to allow one to search for similar scientific papers based on abstracts. A list of the top 10 results will be shown, as can be seen here:
+
+![image](figures/index.png)
+
+We have two endpoints, `POST /embed` and `POST /search`; the latter is used by the index page to emit a POST request and show the top 10 results. The first one is used to fetch the embedding for an abstract given by `{"abstract": ""}` post body.
 
 ### Question 24
 
@@ -468,7 +472,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 24 fill here ---
+We did a full deployment of our trained application as said above by the `Cloud Run` services. A local run was first performed by `s224233` to make sure it worked and was ready to be deployed. Afterwards, the image for serving it was pushed to the artifacts registry, after which a services was started from that image, allowing updates if updated images was pushed. To invoke the service, one would run `curl -X 'POST' 'https://faiss-api-94748064668.europe-north2.run.app/search' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"abstract": "some abstract here","k": k,"nprobe": 1}'` and you would get a `{[{"title", "abstract", "primary_subject", "subjects", "arxiv_id"}] * k}` based on similarity scores.
 
 ### Question 25
 
@@ -483,7 +487,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 25 fill here ---
+We did not perform any load testing for the API. Load testing, however, is important for all APIs, but especially public ones. An approach to load testing would for example be the framework `locust`. The `locust` framework that allows one to send many requests simultaneously and keep the connections open for specified amount of time. This "blocks" other connections and can make the API very annoying to use for other users. This highlights areas of interest to keep the API responsive and fast, for example making limits on how long a connection can stay open, or how long between data transfers (see [slowloris attacks](https://www.cloudflare.com/learning/ddos/ddos-attack-tools/slowloris/)) amongst others.
 
 ### Question 26
 
@@ -498,7 +502,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 26 fill here ---
+In short, we set up a simple alert system when the amount of requests (logs) from the API service was above a certain threshold. We also added basics Prometheus monitoring of metrics, to see the requests counts for the different endpoints. The alert system was working well, and was tested. See for example below. It would have been ideal to implement more metrics to watch over, for example which parts of the requests took longer, and also more appropriate load balancing, but these are a little more extensive. For example rate-limiting to avoid the worst cases of DDOS, but we wanted to focus our time elsewhere. ![](figures/alert.png)
 
 ## Overall discussion of project
 
@@ -517,7 +521,7 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 27 fill here ---
+The most expensive services were generally the `Vertex AI` and also the `Cloud Run` services. This is of course due to renting GPUs on an hourly basis, and running containerized images. We ended up racking up around 100+ (UPDATE THIS TO CURRENT) by the end of this project, which is not too bad, but we also had short training times. Working in the cloud has its perks, that things should just work and are running, but it can be incredibly infuriating when things are not explained well, break down with unreadable error messages, or long wait times just to see a "permission denied" due to a missing role. The prices are also quite high compared to competitors, but it is Google after all.
 
 ### Question 28
 
@@ -533,7 +537,11 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 28 fill here ---
+We built a semantic paper search system using FAISS as our vector database, indexing ~2.5 million arXiv paper embeddings from our fine-tuned model. The IndexIVFFlat index with 4096 clusters gives us fast approximate nearest neighbor search at scale. Paper metadata is stored in SQLite for efficient lazy-loading, keeping memory usage low.
+
+A web frontend lets users paste an abstract or sentence to find semantically similar papers, displaying similarity scores and direct links to arXiv pages and PDFs. This turns our trained embedding model into a practical research tool.
+
+![](figures/index.png)
 
 ### Question 29
 
@@ -550,7 +558,13 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 29 fill here ---
+An overview of the architecture of our system can be seen here: ![project overview](figures/diagram.png)
+
+The starting point is local development, where we use `uv` for dependency management and `pre-commit` hooks for code quality (Ruff linting/formatting, Mypy type-checking). Code follows a cookiecutter template with clear separation between source code, tests, configs, and dockerfiles. When we push code to GitHub, it triggers our CI/CD pipeline through GitHub Actions. The pipeline runs tests across Windows, Ubuntu, and macOS, performs linting checks, and builds Docker images. For training, a dedicated workflow builds a CUDA-enabled Docker image and pushes it to Google Artifact Registry.
+
+From Artifact Registry, the training image is deployed to Vertex AI for model training. The training job pulls data from Google Cloud Storage buckets (where our preprocessed arXiv dataset resides), trains the SentenceTransformer model, and logs metrics to Weights & Biases for experiment tracking. The trained model artifacts are saved back to Cloud Storage.
+
+For serving, a separate API Docker image is built and deployed to Cloud Run. This containerized FastAPI application loads the trained model and FAISS index from Cloud Storage at startup. The API exposes endpoints for embedding generation and semantic search, with Prometheus metrics for monitoring. A web frontend is served alongside the API, allowing users to search for similar papers. Data versioning is handled through DVC with remote storage in Google Cloud Storage.
 
 ### Question 30
 
@@ -564,7 +578,15 @@ s224178, s194591, s224233, s224207
 >
 > Answer:
 
---- question 30 fill here ---
+Most of the frustrations came with working with Google Cloud. The cloud interface was slow and annoying to work with generally, and different parts failed at different times, usually after a long wait, with errors that weren't always human readable. This meant a lot of time was spent waiting for failure/success and debugging the errors we eventually received. Permissions were a bit annoying as well, albeit easily passed if `owner` role was given out freely.
+
+Getting the CUDA-enabled Docker image to work properly was particularly challenging. The combination of NVIDIA base images, cuDNN, Python 3.12, and our specific dependencies required multiple iterations to get right. Build times were long, making the feedback loop painful. We eventually settled on a multi-stage build approach to keep the final image size manageable while including all necessary CUDA libraries.
+
+Another significant challenge was coordinating work across team members with different development environments (Windows, macOS, Linux). While Docker helped with deployment consistency, local development still had quirks, especially around GPU access and path handling. Our CI pipeline testing across all three operating systems caught several of these issues early.
+
+The Vertex AI integration also required careful handling of secrets and authentication. We spent time debugging authentication issues between GitHub Actions, Artifact Registry, and Vertex AI. The programmatic approach to secret management (using Google Secret Manager) ended up being more reliable than YAML substitution patterns.
+
+Finally, managing the large arXiv dataset (2.5M+ papers) required attention to memory efficiency. We implemented streaming data loading and used SQLite for metadata storage to avoid loading everything into memory at once.
 
 ### Question 31
 
@@ -582,4 +604,4 @@ s224178, s194591, s224233, s224207
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
---- question 31 fill here ---
+Student s194591 worked on the continuous integrations, project structure, large parts of the testing and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and setting up auto-building images to the cloud. s224178 worked on Vertex AI training, config files for training, Docker, linting and testing, API development, created a project diagram, and contributed to debugging GPU and environment setup for cloud-based model training. s224207 worked on Docker (training image), ONNX integration (model export and runtime support) with related CI testing, Hydra configs, and the project documentation pipeline, including MkDocs updates and GitHub Pages setup. s224233 worked on training and data scripts, API/frontend, cloud run deployment, vector DB (FAISS) and visualization. Across the project, AI tools such as ChatGPT, Claude, and Gemini were used to support development through debugging assistance, code generation, configuration troubleshooting, and documentation drafting, while all final implementations and decisions were made and validated by the team.
