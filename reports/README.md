@@ -564,7 +564,7 @@ An overview of the architecture of our system can be seen here: ![here](figures/
 >
 > Answer:
 
-Most of the frustratings came with working with Google Cloud. The cloud interfacing was slow and annoying, different parts failed at different times, usually after a long wait. This meant a lot of time was spent waiting for failure/success. Permissions was a bit annoying as well, albeit easily passed if `owner` role was given out freely.
+Most of the frustratings came with working with Google Cloud. The cloud interface was slow and annoying to work with generally, and different parts failed at different times, usually after a long wait, with errors that weren't always so human readable. This meant a lot of time was spent waiting for failure/success and debugging the errors we eventually received. Permissions was a bit annoying as well, albeit easily passed if `owner` role was given out freely.
 
 ### Question 31
 
