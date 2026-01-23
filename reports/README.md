@@ -582,4 +582,4 @@ Most of the frustratings came with working with Google Cloud. The cloud interfac
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-Student s194591 was in charge of the continuous integrations, project structure, large parts of the testing and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and setting up auto-building images to the cloud.
+Student s194591 worked on the continuous integrations, project structure, large parts of the testing and parts of the google cloud integration; this included workflows to test, lint and build images, syncing data and setting up auto-building images to the cloud. s224178 worked on Vertex AI training, config files for training, Docker, linting and testing, API development, created a project diagram, and contributed to debugging GPU and environment setup for cloud-based model training.
