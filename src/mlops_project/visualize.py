@@ -134,12 +134,13 @@ def reduce_dimensions(
         raise ValueError(f"Unknown method: {method}. Use 'umap' or 'tsne'.")
 
 
-def get_short_label(subject: str) -> str:
-    """Extract short label from subject string like 'Machine Learning (cs.LG)' -> 'cs.LG'."""
+def get_clean_label(subject: str) -> str:
+    """Extract clean label from subject string like 'Machine Learning (cs.LG)' -> 'Machine Learning'."""
     import re
 
-    match = re.search(r"\(([^)]+)\)$", subject)
-    return match.group(1) if match else subject[:20]
+    # Remove the parenthetical code at the end
+    clean = re.sub(r"\s*\([^)]+\)\s*$", "", subject)
+    return clean.strip()
 
 
 def create_scatter_plot(
@@ -148,9 +149,9 @@ def create_scatter_plot(
     output_path: Path,
     figsize: int = 16,
     dpi: int = 300,
-    point_size: float = 1.0,
-    alpha: float = 0.7,
-    min_cluster_size_for_label: int = 100,
+    point_size: float = 1.5,
+    alpha: float = 0.8,
+    min_cluster_size_for_label: int = 150,
 ) -> None:
     """Create and save a scatter plot of embeddings colored by subject.
 
@@ -171,17 +172,29 @@ def create_scatter_plot(
     # Count points per subject
     subject_counts = {subj: sum(1 for s in subjects if s == subj) for subj in unique_subjects}
 
-    # Use a perceptually uniform colormap with good separation
-    colors = plt.colormaps.get_cmap("hsv")(np.linspace(0, 0.9, n_subjects))
+    # Generate bright, saturated colors that pop on dark background
     np.random.seed(42)
-    np.random.shuffle(colors)  # Shuffle to avoid similar colors being adjacent
+    hues = np.linspace(0, 1, n_subjects, endpoint=False)
+    np.random.shuffle(hues)
+    colors = []
+    for h in hues:
+        # Convert HSV to RGB with high saturation and value for bright colors
+        import colorsys
+
+        r, g, b = colorsys.hsv_to_rgb(h, 0.85, 0.95)
+        colors.append((r, g, b, alpha))
     subject_to_color = {subj: colors[i] for i, subj in enumerate(unique_subjects)}
 
-    # Create figure with clean white background
-    _, ax = plt.subplots(figsize=(figsize, figsize), facecolor="white")
-    ax.set_facecolor("white")
+    # Dark theme colors
+    bg_color = "#0d1117"  # GitHub dark background
+    label_bg = "#161b22"  # Slightly lighter for labels
+    label_text = "#e6edf3"  # Light text
 
-    # Plot all points at once for efficiency, sorted by count (smaller clusters on top)
+    # Create figure with dark background
+    _, ax = plt.subplots(figsize=(figsize, figsize), facecolor=bg_color)
+    ax.set_facecolor(bg_color)
+
+    # Plot all points, sorted by count (smaller clusters on top)
     sorted_subjects = sorted(unique_subjects, key=lambda s: subject_counts[s], reverse=True)
 
     for subj in sorted_subjects:
@@ -193,7 +206,7 @@ def create_scatter_plot(
             s=point_size,
             alpha=alpha,
             edgecolors="none",
-            rasterized=True,  # Rasterize for smaller file size
+            rasterized=True,
         )
 
     # Collect label positions for larger clusters only
@@ -206,29 +219,30 @@ def create_scatter_plot(
             centroid_y = coords[mask, 1].mean()
             label_positions.append((centroid_x, centroid_y, subj, count))
 
-    # Sort by count descending, label largest clusters
+    # Sort by count descending
     label_positions.sort(key=lambda x: x[3], reverse=True)
 
-    # Add labels with short codes
-    for x, y, subj, count in label_positions:
-        short_label = get_short_label(subj)
+    # Add labels with readable names
+    for x, y, subj, *_ in label_positions:
+        clean_label = get_clean_label(subj)
         ax.annotate(
-            short_label,
+            clean_label,
             (x, y),
-            fontsize=7,
-            fontweight="bold",
+            fontsize=6,
+            fontweight="medium",
             ha="center",
             va="center",
-            color="#333333",
+            color=label_text,
             bbox=dict(
-                boxstyle="round,pad=0.15",
-                facecolor="white",
-                alpha=0.85,
-                edgecolor="none",
+                boxstyle="round,pad=0.2",
+                facecolor=label_bg,
+                alpha=0.9,
+                edgecolor="#30363d",
+                linewidth=0.5,
             ),
         )
 
-    # Remove all axes and spines for clean look
+    # Remove all axes and spines
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
@@ -241,7 +255,7 @@ def create_scatter_plot(
     ax.set_ylim(coords[:, 1].min() - y_margin, coords[:, 1].max() + y_margin)
 
     plt.tight_layout(pad=0.5)
-    plt.savefig(output_path, dpi=dpi, bbox_inches="tight", facecolor="white", edgecolor="none")
+    plt.savefig(output_path, dpi=dpi, bbox_inches="tight", facecolor=bg_color, edgecolor="none")
     plt.close()
     logger.info(f"Saved visualization to {output_path}")
 
