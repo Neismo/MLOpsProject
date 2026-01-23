@@ -435,7 +435,7 @@ We did not really explicitly use Compute Engine, but we did use it through Verte
 >
 > Answer:
 
-We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle, as the CUDA image from NVIDIA had a really hard time working, took a very long time to build, and usually failed for odd reasons. We found out simply building without CUDA images, but with a CUDA available GPU, was all that we needed, and we opted for a quick build on the latest stable Ubuntu image with python3.12. This allowed us to run and train the models, and loading/saving in the associated bucket we showed earlier! We also opted for a programmatic approach to secrets managing the `wandb_api_key`, as opposed to a `vertex.yaml` approach with substitution.
+We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle at first, as getting the CUDA image from NVIDIA working was challenging, but we were able to get it to work by using a cuDNN image on the latest stable Ubuntu image with Python 3.12. This allowed us to run and train the models, and load and save them in the associated bucket we showed earlier. We also opted for a programmatic approach to secrets managing the `wandb_api_key`, as opposed to a `vertex.yaml` approach with substitution shown in exercises.
 
 ## Deployment
 
