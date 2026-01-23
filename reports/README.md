@@ -498,7 +498,7 @@ We did not perform any load testing for the API. Load testing, however, is impor
 >
 > Answer:
 
-In short, we set up a simple alert system when the amount of requests (logs) from the API service was above a certain threshold. Mostly this was to illustrate that we know about it.
+In short, we set up a simple alert system when the amount of requests (logs) from the API service was above a certain threshold. We also added basics Prometheus monitoring of metrics, to see the requests counts for the different endpoints. The alert system was working well, and was tested. See for example below. It would have been ideal to implement more metrics to watch over, for example which parts of the requests took longer, and also more appropriate load balancing, but these are a little more extensive. For example rate-limiting to avoid the worst cases of DDOS, but we wanted to focus our time elsewhere. ![](figures/alert.png)
 
 ## Overall discussion of project
 
