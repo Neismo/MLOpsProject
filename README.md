@@ -10,6 +10,30 @@ Based on the learned embeddings, we will train a lightweight classifier (logisti
 
 For deployment we plan to make a FastAPI endpoint running in a docker container. We plan to experiment using ONNX as the runtime. We are also interested in using a specific library for similarity search across all our samples, such as FAISS.
 
+## Documentation
+
+Full documentation is available at [https://neismo.github.io/MLOpsProject/](https://neismo.github.io/MLOpsProject/)
+
+The documentation includes:
+- Project overview and architecture
+- Data preprocessing and model training guides
+- API documentation and deployment instructions
+- Configuration management with Hydra
+- MLOps stack and tools
+
+### Building documentation locally
+
+To build and serve the documentation locally:
+```bash
+# Build the documentation
+uv run mkdocs build -f mkdocs.yaml
+
+# Serve locally with live reload
+uv run mkdocs serve -f mkdocs.yaml
+```
+
+The documentation will be available at `http://127.0.0.1:8000/`
+
 ## Frameworks
 
 The project will be implemented in `Python` using `PyTorch` as the deep learning backend. We will use the `sentence-transformers` library to handle transformer-based embedding models, loss functions for contrastive learning, and evaluation utilities. Experiment tracking and metric logging will be handled with `Weights & Biases (WandB)` to enable comparison between different model configurations and training runs. `Hydra` will be used for configuration management, allowing us to define datasets, model parameters, and training settings in a modular and reproducible way.
@@ -65,26 +89,35 @@ As a baseline we are also considering TF-IDF with linear classification.
 
 The directory structure of the project looks like this:
 ```txt
+├── .dvc/
+│   ├── config
 ├── .github/                  # Github actions and dependabot
 │   ├── dependabot.yaml
 │   └── workflows/
-│       └── lint-test-build.yaml
+│       ├── docs.yml
+│       ├── lint-test-build.yml
+│       └── pre-commit-update.yml
 ├── configs/                  # Configuration files
+│   ├── dataset.yaml
+│   ├── gpu_train_vertex.yaml
+│   └── train_config.yaml
 ├── data/                     # Data directory
-│   ├── train
-│   └── test
-|   └── eval
+│   ├── train_pairs/
+│   ├── eval_pairs/
+│   └── test/
 ├── dockerfiles/              # Dockerfiles
 │   ├── api.Dockerfile
 │   └── train.Dockerfile
 ├── docs/                     # Documentation
-│   ├── mkdocs.yml
+│   ├── README.md
 │   └── source/
 │       └── index.md
 ├── models/                   # Trained models
 ├── notebooks/                # Jupyter notebooks
 ├── reports/                  # Reports
-│   └── figures/
+│   ├── figures/
+│   ├── README.md
+│   └── report.py
 ├── src/                      # Source code
 │   ├── project_name/
 │   │   ├── __init__.py
@@ -93,19 +126,25 @@ The directory structure of the project looks like this:
 │   │   ├── evaluate.py
 │   │   ├── models.py
 │   │   ├── train.py
+│   │   ├── utils.py
 │   │   └── visualize.py
 └── tests/                    # Tests
 │   ├── __init__.py
+│   ├── conftest.py
 │   ├── test_api.py
 │   ├── test_data.py
 │   └── test_model.py
+├── .dockerignore
+├── .dvcignore
 ├── .gitignore
 ├── .pre-commit-config.yaml
 ├── LICENSE
 ├── pyproject.toml            # Python project file
+├── coudbuild.yaml
 ├── README.md                 # Project README
-├── requirements.txt          # Project requirements
-├── requirements_dev.txt      # Development requirements
+├── data.dvc
+├── mkdocs.yaml
+├── uv.lock
 └── tasks.py                  # Project tasks
 ```
 
