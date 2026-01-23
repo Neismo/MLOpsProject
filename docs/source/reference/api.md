@@ -5,8 +5,14 @@ The [FastAPI](https://fastapi.tiangolo.com/) app lives in `src/mlops_project/api
 That behavior is not friendly to auto documentation, so this module is documented manually.
 
 ## Entry points
-The API reads configuration from the CLI flag `--model-path`, then falls back to the `MODEL_PATH` environment
-variable, and finally defaults to `models/contrastive-minilm/`.
+
+The API configuration is primarily handled via environment variables when running with Uvicorn:
+
+- `MODEL_PATH`: Path to the SentenceTransformer model (default: `models/contrastive-minilm/`).
+
+- `INDEX_PATH`: Path to the FAISS index (optional).
+
+The application also defines CLI arguments (`--model-path`, `--index-path`) which can be used if invoking the module directly.
 
 ## Endpoints
 The service exposes `GET /health` to report status and device, and `POST /embed` to return normalized embeddings

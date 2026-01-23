@@ -88,7 +88,7 @@ Run training on GPU, mounting data/models so downloads and checkpoints persist:
 docker run --rm --gpus all \
   -v ${PWD}/data:/app/data \
   -v ${PWD}/models:/app/models \
-  mlops-train:cuda uv run python src/mlops_project/train.py
+  mlops-train:cuda uv run python -m mlops_project.train
 ```
 
 Disable Weights & Biases logging (optional):
@@ -97,7 +97,7 @@ Disable Weights & Biases logging (optional):
 docker run --rm --gpus all \
   -v ${PWD}/data:/app/data \
   -v ${PWD}/models:/app/models \
-  mlops-train:cuda uv run python src/mlops_project/train.py wandb.enabled=false
+  mlops-train:cuda uv run python -m mlops_project.train wandb.enabled=false
 ```
 
 A docker image is automatically built when pushed to the `build` branch if `format + lint` and `tests` actions pass via a GitHub action workflow using the Google Cloud Build. A branch was specifically set up for this to avoid wasting many minutes, as each build can, without optimization of any sorts, take up towards 20 minutes before completion.
@@ -109,10 +109,6 @@ The project includes a FastAPI application for generating embeddings and perform
 ### Running the API locally
 
 ```bash
-# Run with uvicorn (requires model at specified path)
-uv run uvicorn mlops_project.api:app --host 0.0.0.0 --port 8000 --model-path ./models/your-model
-
-# Or set paths via environment variables
 MODEL_PATH=./models/your-model INDEX_PATH=./data/faiss uv run uvicorn mlops_project.api:app
 ```
 

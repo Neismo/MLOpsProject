@@ -37,14 +37,15 @@ curl -X POST http://localhost:8000/embed \
 ```
 
 ### Model loading
-The API loads a model from `--model-path`, then `MODEL_PATH`, and falls back to `models/contrastive-minilm/`.
-The model directory must exist and contain a [SentenceTransformer](https://www.sbert.net/) model. GPU is used when
-available.
+The API is primarily configured via environment variables (`MODEL_PATH`, `INDEX_PATH`). It can also accept CLI flags
+(`--model-path`, `--index-path`) when invoked directly. If no path is provided, it falls back to
+`models/contrastive-minilm/`. The model directory must exist and contain a
+[SentenceTransformer](https://www.sbert.net/) model. GPU is used when available.
 
 ### Run locally
 Run the service with [Uvicorn](https://www.uvicorn.org/):
 ```bash
-MODEL_PATH="models/all-MiniLM-L6-v2-mnrl-100k-balanced" uv run uvicorn src.mlops_project.api:app \
+MODEL_PATH="models/your-model" INDEX_PATH="data/faiss" uv run uvicorn mlops_project.api:app \
   --host 0.0.0.0 --port 8000
 ```
 

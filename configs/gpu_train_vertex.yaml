@@ -13,5 +13,6 @@ workerPoolSpecs:
       - src/mlops_project/train.py
     args:
       - wandb.enabled=true
+      - meta.use_gcs=true
 scheduling:
   timeout: 3600s

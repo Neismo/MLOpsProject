@@ -4,7 +4,7 @@ defaults:
 
 meta:
   save_model: true
-  use_gcs: true
+  use_gcs: false
   bucket_name: mlops-proj
   require_cuda: true
 train:
