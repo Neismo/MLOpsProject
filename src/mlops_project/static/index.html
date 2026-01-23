@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Search</title>
+    <style>
+        body { max-width: 800px; margin: 20px auto; padding: 0 10px; }
+        textarea { width: 100%; height: 100px; }
+        .error { color: red; }
+        .result { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .score { font-family: monospace; color: #666; }
+        .subject { font-family: monospace; font-size: 0.9em; }
+        .abstract { font-size: 0.9em; color: #444; }
+        .show-more { color: blue; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Paper Search</h1>
+    <p>
+        <label>Abstract:<br>
+        <textarea id="abstract" placeholder="Enter abstract..."></textarea></label>
+    </p>
+    <p>
+        <label>Results: <input type="number" id="k" value="10" min="1" max="100" style="width:50px"></label>
+        <button id="search-btn" onclick="search()">Search</button>
+    </p>
+    <div id="error" class="error"></div>
+    <div id="loading" style="display:none"><em>Searching...</em></div>
+    <div id="results"></div>
+
+    <script>
+        async function search() {
+            const abstract = document.getElementById('abstract').value.trim();
+            const k = parseInt(document.getElementById('k').value) || 10;
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const searchBtn = document.getElementById('search-btn');
+
+            errorDiv.textContent = '';
+            resultsDiv.innerHTML = '';
+
+            if (!abstract) {
+                errorDiv.textContent = 'Please enter an abstract.';
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            searchBtn.disabled = true;
+            const start = performance.now();
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ abstract, k })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Search failed');
+                }
+
+                const data = await response.json();
+                const elapsed = ((performance.now() - start) / 1000).toFixed(2);
+                displayResults(data.results, elapsed);
+            } catch (err) {
+                errorDiv.textContent = err.message;
+            } finally {
+                loadingDiv.style.display = 'none';
+                searchBtn.disabled = false;
+            }
+        }
+
+        function displayResults(results, elapsed) {
+            const resultsDiv = document.getElementById('results');
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p><em>No results found.</em></p>';
+                return;
+            }
+
+            let html = '<p><strong>' + results.length + ' results</strong> <span class="score">(' + elapsed + 's)</span></p>';
+            results.forEach((r, i) => {
+                const id = 'abs-' + i;
+                const truncate = r.abstract.length > 300;
+                const short = truncate ? r.abstract.substring(0, 300) + '...' : r.abstract;
+                const titleHtml = r.arxiv_id
+                    ? `<a href="https://arxiv.org/abs/${esc(r.arxiv_id)}" target="_blank">${esc(r.title)}</a>`
+                    : esc(r.title);
+                const pdfLink = r.arxiv_id
+                    ? ` <a href="https://arxiv.org/pdf/${esc(r.arxiv_id)}.pdf" target="_blank">[pdf]</a>`
+                    : '';
+                const arxivIdDisplay = r.arxiv_id ? ` <span class="score">${esc(r.arxiv_id)}</span>` : '';
+                html += `<div class="result">
+                    <strong>#${i+1}</strong> <span class="score">[${r.score.toFixed(4)}]</span>
+                    <strong>${titleHtml}</strong>${pdfLink}<br>
+                    <span class="subject">${esc(r.primary_subject)}</span>${arxivIdDisplay}<br>
+                    <span class="abstract" id="${id}" data-full="${attr(r.abstract)}" data-short="${attr(short)}">${esc(short)}</span>
+                    ${truncate ? ` <span class="show-more" onclick="toggle('${id}')">[more]</span>` : ''}
+                </div>`;
+            });
+            resultsDiv.innerHTML = html;
+        }
+
+        function toggle(id) {
+            const el = document.getElementById(id);
+            const link = el.nextElementSibling;
+            const expanded = el.dataset.expanded === '1';
+            el.textContent = expanded ? el.dataset.short : el.dataset.full;
+            el.dataset.expanded = expanded ? '0' : '1';
+            link.textContent = expanded ? '[more]' : '[less]';
+        }
+
+        function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function attr(t) { return t.replace(/"/g, '&quot;'); }
+
+        document.getElementById('abstract').addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 'Enter') search();
+        });
+    </script>
+</body>
+</html>

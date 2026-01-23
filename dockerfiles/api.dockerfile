@@ -1,12 +1,21 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-COPY uv.lock uv.lock
-COPY pyproject.toml pyproject.toml
+WORKDIR /app
 
-RUN uv sync --frozen --no-install-project
-
+# Install dependencies - CPU only for torch
+COPY uv.lock pyproject.toml README.md ./
 COPY src src/
 
-RUN uv sync --frozen
+# Override torch source to use CPU index on Linux
+RUN sed -i "s/sys_platform == 'linux' or sys_platform == 'win32'/sys_platform == 'win32'/g" pyproject.toml && \
+    sed -i "s/sys_platform == 'darwin'/sys_platform == 'darwin' or sys_platform == 'linux'/g" pyproject.toml && \
+    uv pip install --system -e .
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.mlops_project.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Model and index will be mounted at runtime at /data
+ENV PORT=8000
+
+# Expose port
+EXPOSE 8000
+
+# Run the API server
+ENTRYPOINT ["python", "-m", "uvicorn", "mlops_project.api:app", "--host", "0.0.0.0", "--port", "8000"]
