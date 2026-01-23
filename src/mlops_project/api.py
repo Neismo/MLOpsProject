@@ -10,11 +10,20 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import torch
 from loguru import logger
+from prometheus_client import Counter, make_asgi_app
 
 from mlops_project.faiss_index import FAISSIndex
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
+
+# ---------- Prometheus Metrics  ----------
+
+REQUEST_COUNT = Counter(
+    "api_request_count",
+    "Total number of API requests",
+    ["endpoint", "method", "status_code"],
+)
 
 # ---------- Parse CLI arguments ----------
 
@@ -44,9 +53,12 @@ STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+app.mount("/metrics", make_asgi_app())
+
 
 @app.get("/")
 def root():
+    REQUEST_COUNT.labels(endpoint="/", method="GET", status_code=302).inc()
     return RedirectResponse(url="/static/index.html")
 
 
@@ -130,6 +142,7 @@ class SearchResponse(BaseModel):
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
+    REQUEST_COUNT.labels(endpoint="/health", method="GET", status_code=200).inc()
     return HealthResponse(status="ok", device=device)
 
 
@@ -140,6 +153,7 @@ def health() -> HealthResponse:
 def embed_abstract(request: AbstractRequest) -> EmbeddingResponse:
     if not request.abstract.strip():
         logger.warning("Empty abstract received")
+        REQUEST_COUNT.labels(endpoint="/embed", method="POST", status_code=400).inc()
         raise HTTPException(status_code=400, detail="Abstract must not be empty")
 
     embedding = model.encode(
@@ -148,6 +162,7 @@ def embed_abstract(request: AbstractRequest) -> EmbeddingResponse:
         normalize_embeddings=True,
     )
 
+    REQUEST_COUNT.labels(endpoint="/embed", method="POST", status_code=200).inc()
     return EmbeddingResponse(
         embedding_dim=len(embedding),
         embedding=embedding.tolist(),
@@ -160,12 +175,14 @@ def embed_abstract(request: AbstractRequest) -> EmbeddingResponse:
 @app.post("/search", response_model=SearchResponse)
 def search_similar(request: SearchRequest) -> SearchResponse:
     if faiss_index is None:
+        REQUEST_COUNT.labels(endpoint="/search", method="POST", status_code=503).inc()
         raise HTTPException(
             status_code=503,
             detail="FAISS index not loaded. Set INDEX_PATH environment variable or --index-path argument.",
         )
 
     if not request.abstract.strip():
+        REQUEST_COUNT.labels(endpoint="/search", method="POST", status_code=400).inc()
         logger.warning("Empty abstract received for search")
         raise HTTPException(status_code=400, detail="Abstract must not be empty")
 
@@ -187,7 +204,7 @@ def search_similar(request: SearchRequest) -> SearchResponse:
     results = faiss_index.search(query_embedding, k=request.k)
     t2 = time.perf_counter()
     logger.info(f"Total search time {(t2 - t0) * 1000:.2f}ms")
-
+    REQUEST_COUNT.labels(endpoint="/search", method="POST", status_code=200).inc()
     return SearchResponse(
         results=[
             SearchResultItem(
