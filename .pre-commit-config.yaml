@@ -7,6 +7,7 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+        exclude: ^mkdocs\.yaml$
     -   id: check-added-large-files
     -   id: name-tests-test
         args: [--pytest-test-first]
@@ -29,3 +30,4 @@ repos:
     hooks:
     -   id: mypy
         args: [--ignore-missing-imports]
+        exclude: ^(reports/|scripts/)

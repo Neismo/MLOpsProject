@@ -69,7 +69,7 @@ try:
     model = SentenceTransformer(str(MODEL_PATH), device=device)
     logger.info(f"Model loaded from {MODEL_PATH} on {device}")
     # Warmup the model
-    _ = model.encode("warmup", convert_to_numpy=True, normalize_embeddings=True)
+    model.encode("warmup", convert_to_numpy=True, normalize_embeddings=True)
     logger.info("Model warmup complete")
 except Exception as e:
     logger.error(f"Failed to load model: {e}")

@@ -16,7 +16,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.12.0",
     "datasets>=4.4.2",
@@ -53,6 +53,7 @@ dev = [
     "mkdocstrings-python==2.0.1",
     "mypy>=1.19.1",
     "ruff>=0.14.11",
+    "types-requests>=2.32.0",
 ]
 
 
@@ -82,6 +83,7 @@ exclude = ["notebooks/*.ipynb", "reports/report.py"]
 
 [tool.mypy]
 exclude = ["notebooks/*.ipynb", "reports/report.py"]
+ignore_missing_imports = true
 
 [tool.coverage.run]
 omit = ["tests/*", "/tmp/*", "/private/*"]

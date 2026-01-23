@@ -289,6 +289,8 @@ def build_index_from_dataset(
 
     # Pre-allocate embeddings array
     embedding_dim = model.get_sentence_embedding_dimension()
+    if embedding_dim is None:
+        raise ValueError("Model does not have a fixed embedding dimension")
     embeddings = np.zeros((n_samples, embedding_dim), dtype=np.float32)
     metadata = []
 
