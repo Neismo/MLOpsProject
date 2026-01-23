@@ -57,7 +57,7 @@ def root():
 
 # ---------- Load model once at startup ----------
 
-MODEL_PATH = Path(args.model_path or "/data/model")
+MODEL_PATH = Path(args.model_path or os.environ.get("MODEL_PATH", "/data/model"))
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -78,7 +78,7 @@ except Exception as e:
 
 # ---------- Load FAISS index (optional) ----------
 
-INDEX_PATH = Path(args.index_path or "/data/index")
+INDEX_PATH = Path(args.index_path or os.environ.get("INDEX_PATH", "/data/index"))
 # METADATA_SOURCE: "json", "sqlite", or unset for auto-detect
 METADATA_SOURCE = os.environ.get("METADATA_SOURCE")
 faiss_index: FAISSIndex | None = None

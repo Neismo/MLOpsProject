@@ -159,7 +159,7 @@ class TestFAISSIndex:
         # Remove metadata file
         (save_dir / "metadata.json").unlink()
 
-        with pytest.raises(FileNotFoundError, match="Metadata file not found"):
+        with pytest.raises(FileNotFoundError, match="Neither .* nor .* found"):
             FAISSIndex.load(save_dir)
 
     def test_load_with_nprobe_override(self, faiss_index, tmp_path):
