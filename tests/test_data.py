@@ -405,3 +405,167 @@ def test_different_splits(mock_data, tmp_path, split):
 
     dataset = mlops_project.data.ArxivPapersDataset(split=split, data_dir=data_dir)
     assert len(dataset) == len(mock_data)
+
+
+# Tests for ensure_data_exists
+def test_ensure_data_exists_creates_data_when_missing(mock_raw_data, tmp_path, monkeypatch):
+    """Test that ensure_data_exists runs preprocessing when data doesn't exist."""
+    from unittest.mock import MagicMock
+    import omegaconf
+
+    # Mock load_dataset to return our mock_raw_data
+    mock_load_dataset = MagicMock(return_value=mock_raw_data)
+    monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create a config with small num_pairs
+    dataset_config = omegaconf.OmegaConf.create(
+        {
+            "source": "nick007x/arxiv-papers",
+            "columns": ["primary_subject", "subjects", "abstract", "title"],
+            "splits": {"test_size": 0.2, "seed": 42},
+            "pairs": {
+                "num_train": 100,
+                "num_eval": 10,
+                "loss": "MultipleNegativesRankingLoss",
+                "balanced": True,
+                "text_field": "abstract",
+            },
+        }
+    )
+
+    # Data doesn't exist, should run preprocessing
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config)
+
+    # Verify data was created
+    assert (data_dir / "train_pairs").exists()
+    assert (data_dir / "eval_pairs").exists()
+    assert (data_dir / "test").exists()
+    assert (data_dir / "preprocess_config.yaml").exists()
+
+    # Verify load_dataset was called (preprocessing ran)
+    mock_load_dataset.assert_called_once()
+
+
+def test_ensure_data_exists_skips_when_config_matches(mock_raw_data, tmp_path, monkeypatch):
+    """Test that ensure_data_exists skips preprocessing when data exists with matching config."""
+    from unittest.mock import MagicMock
+    import omegaconf
+
+    mock_load_dataset = MagicMock(return_value=mock_raw_data)
+    monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
+
+    data_dir = tmp_path / "data"
+
+    dataset_config = omegaconf.OmegaConf.create(
+        {
+            "source": "nick007x/arxiv-papers",
+            "columns": ["primary_subject", "subjects", "abstract", "title"],
+            "splits": {"test_size": 0.2, "seed": 42},
+            "pairs": {
+                "num_train": 100,
+                "num_eval": 10,
+                "loss": "MultipleNegativesRankingLoss",
+                "balanced": True,
+                "text_field": "abstract",
+            },
+        }
+    )
+
+    # First call - creates data
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config)
+    assert mock_load_dataset.call_count == 1
+
+    # Second call with same config - should skip
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config)
+    # load_dataset should NOT be called again
+    assert mock_load_dataset.call_count == 1
+
+
+def test_ensure_data_exists_reruns_when_config_changes(mock_raw_data, tmp_path, monkeypatch):
+    """Test that ensure_data_exists re-runs preprocessing when config has changed."""
+    from unittest.mock import MagicMock
+    import omegaconf
+
+    mock_load_dataset = MagicMock(return_value=mock_raw_data)
+    monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
+
+    data_dir = tmp_path / "data"
+
+    dataset_config_v1 = omegaconf.OmegaConf.create(
+        {
+            "source": "nick007x/arxiv-papers",
+            "columns": ["primary_subject", "subjects", "abstract", "title"],
+            "splits": {"test_size": 0.2, "seed": 42},
+            "pairs": {
+                "num_train": 100,
+                "num_eval": 10,
+                "loss": "MultipleNegativesRankingLoss",
+                "balanced": True,
+                "text_field": "abstract",
+            },
+        }
+    )
+
+    # First call - creates data
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config_v1)
+    assert mock_load_dataset.call_count == 1
+
+    # Create a modified config (different seed)
+    dataset_config_v2 = omegaconf.OmegaConf.create(
+        {
+            "source": "nick007x/arxiv-papers",
+            "columns": ["primary_subject", "subjects", "abstract", "title"],
+            "splits": {"test_size": 0.2, "seed": 99},  # Changed seed
+            "pairs": {
+                "num_train": 100,
+                "num_eval": 10,
+                "loss": "MultipleNegativesRankingLoss",
+                "balanced": True,
+                "text_field": "abstract",
+            },
+        }
+    )
+
+    # Second call with different config - should re-run preprocessing
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config_v2)
+    assert mock_load_dataset.call_count == 2
+
+
+def test_ensure_data_exists_reruns_when_no_saved_config(mock_raw_data, tmp_path, monkeypatch):
+    """Test that ensure_data_exists re-runs preprocessing when no saved config exists."""
+    from unittest.mock import MagicMock
+    import omegaconf
+
+    mock_load_dataset = MagicMock(return_value=mock_raw_data)
+    monkeypatch.setattr("mlops_project.data.load_dataset", mock_load_dataset)
+
+    data_dir = tmp_path / "data"
+
+    dataset_config = omegaconf.OmegaConf.create(
+        {
+            "source": "nick007x/arxiv-papers",
+            "columns": ["primary_subject", "subjects", "abstract", "title"],
+            "splits": {"test_size": 0.2, "seed": 42},
+            "pairs": {
+                "num_train": 100,
+                "num_eval": 10,
+                "loss": "MultipleNegativesRankingLoss",
+                "balanced": True,
+                "text_field": "abstract",
+            },
+        }
+    )
+
+    # First call - creates data
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config)
+    assert mock_load_dataset.call_count == 1
+
+    # Remove the saved config file
+    (data_dir / "preprocess_config.yaml").unlink()
+
+    # Second call without saved config - should re-run
+    mlops_project.data.ensure_data_exists(data_dir, dataset_config)
+    assert mock_load_dataset.call_count == 2
