@@ -10,20 +10,13 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import torch
 from loguru import logger
-from prometheus_client import Counter, make_asgi_app
+from prometheus_client import make_asgi_app
 
+from mlops_project.metrics import REQUEST_COUNT
 from mlops_project.faiss_index import FAISSIndex
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
-
-# ---------- Prometheus Metrics  ----------
-
-REQUEST_COUNT = Counter(
-    "api_request_count",
-    "Total number of API requests",
-    ["endpoint", "method", "status_code"],
-)
 
 # ---------- Parse CLI arguments ----------
 
