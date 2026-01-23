@@ -4,7 +4,7 @@ defaults:
 
 meta:
   save_model: true
-  use_gcs: false
+  use_gcs: true
   bucket_name: mlops-proj
   require_cuda: true
 train:
@@ -15,4 +15,4 @@ train:
   loss: MultipleNegativesRankingLoss # default, good for positive only pairs
   model: all-MiniLM-L6-v2
 wandb:
-  enabled: true
+  enabled: false
