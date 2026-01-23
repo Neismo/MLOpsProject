@@ -184,7 +184,7 @@ We used UV to help manage all our dependencies; it is a modern and fast framewor
 >
 > Answer:
 
-We did indeed initialize the project with a cookiecutter template, specifially the one [found here from the course](https://github.com/SkafteNicki/mlops_template). In this we filled out the `src/mlops_project`, `configs`, `data`, `tests`, and `dockerfiles`. We cache models in `models`, but that is done locally. When training, an `outputs` folder from `Hydra` is emitted with experiments, but that is not shared; as an extra, the training script allows for wandb logging (default).
+We did indeed initialize the project with a cookiecutter template, specifially the one [found here from the course](https://github.com/SkafteNicki/mlops_template). In this we filled out the `src/mlops_project`, `configs`, `data`, `tests`, and `dockerfiles`. We cache models in `models`, but that is done locally. When training, an `outputs` folder from `Hydra` is emitted with experiments, but that is not shared; as an extra, the training script allows for wandb logging (default). We have a few extra files for `dvc` and Google Cloud. We also have a few extra source files to help give more structure; for example `metrics.py`, `faiss_index.py`, and `index.py`, which is related to our API.
 
 ### Question 6
 
@@ -218,7 +218,7 @@ We introduced quite a few rules for code quality and formatting. Mostly done by 
 >
 > Answer:
 
-We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a pretty reliable tool.
+We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a reliable framework, building on top of Hugginface Trainer interface.
 
 ### Question 8
 
