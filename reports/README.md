@@ -168,7 +168,7 @@ In this project we used a third-party framework called `Sentence-Transformers`, 
 >
 > Answer:
 
-We used UV to help manage all our dependencies; it is a modern and fast framework. We used it to streamline adding and updating packages we need between members, with a `pyproject.toml` and `uv.lock` making sure the exact same setup was used across our group. We served our code over `GitHub`, to help share code easily and manage any conflicts in approach we might have run into. To get a complete setup ready to go, one should with access to our repository on GitHub, and assuming UV is installed: `git clone REPO`, `cd MLOpsProject`, `uv sync`, `uv run src/mlops_project/data.py` to be ready and have all data processed. Unless Wandb logging is not wished, one should also `wandb logging` if not already done.
+We used UV to help manage all our dependencies; it is a modern and fast framework. We used it to streamline adding and updating packages we need between members, with a `pyproject.toml` and `uv.lock` making sure the exact same setup was used across our group. We served our code over `GitHub`, to help share code easily and manage any conflicts in approach we might have run into. To get a complete setup ready to go, one should with access to our repository on GitHub, and assuming UV is installed: `git clone REPO`, `cd MLOpsProject`, `uv sync`, `uv run src/mlops_project/data.py` to be ready and have all data processed. Unless Wandb logging is not wished, one should also `wandb login` if not already done.
 
 ### Question 5
 
