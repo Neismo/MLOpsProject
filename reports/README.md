@@ -452,11 +452,15 @@ We did manage to train and store our model in the cloud using Vertex AI. It did 
 >
 > Answer:
 
-We have written and deployed an API for our embeddings model through the `Cloud Run` services. For this, FastAPI was used. We also have a simple front-end to go with it, to allow one to search for similar scientific papers based on abstracts. A list of the top 10 results will be shown, as can be seen here:
+We developed and deployed an API using FastAPI on Google Cloud Run. The core functionality is powered by the finetuned SentenceTransformer model and a FAISS (Facebook AI Similarity Search) index. At startup, the service loads both the model and the pre-computed IndexIVFFlat index (containing ~2.5M arXiv paper embeddings) from Cloud Storage.
+
+We implemented two main endpoints:
+- `POST /embed`: Generates normalized embeddings for a given abstract.
+- `POST /search`: Performs semantic search using the FAISS index to find the nearest neighbors for a query abstract.
+
+The search endpoint uses the FAISS index to efficiently retrieve the top-k most similar papers based on cosine similarity. We also integrated a simple frontend that interacts with this `/search` endpoint, allowing users to input an abstract and view the top 10 semantically related papers from arXiv. This transforms the raw embedding model into a functional content-based recommendation system.
 
 ![image](figures/index.png)
-
-We have two endpoints, `POST /embed` and `POST /search`; the latter is used by the index page to emit a POST request and show the top 10 results. The first one is used to fetch the embedding for an abstract given by `{"abstract": ""}` post body.
 
 ### Question 24
 
@@ -487,7 +491,13 @@ We did a full deployment of our trained application as said above by the `Cloud 
 >
 > Answer:
 
-We did not perform any load testing for the API. Load testing, however, is important for all APIs, but especially public ones. An approach to load testing would for example be the framework `locust`. The `locust` framework that allows one to send many requests simultaneously and keep the connections open for specified amount of time. This "blocks" other connections and can make the API very annoying to use for other users. This highlights areas of interest to keep the API responsive and fast, for example making limits on how long a connection can stay open, or how long between data transfers (see [slowloris attacks](https://www.cloudflare.com/learning/ddos/ddos-attack-tools/slowloris/)) amongst others.
+We performed unit testing using `pytest` to verify the functionality of our data processing, model training, and API endpoints. For load testing, we conducted comprehensive evaluations using `locust`, simulating realistic user behavior with mixed request types (searches, embeddings, health checks) ramping up to 100 users.
+
+We compared performance between GPU (CUDA) and CPU backends:
+- **GPU (CUDA):** Achieved ~21 RPS with median latencies (~11-16ms) and P95 latencies peaking around 500ms under heavy load.
+- **CPU:** Achieved ~16 RPS with higher latencies. Median response times degraded to ~50-60ms, and P95 latencies spiked over 1100ms.
+
+Both tests had a 100% success rate, confirming API stability. The `/health` endpoint remained consistently fast (<5ms) in both scenarios.
 
 ### Question 26
 

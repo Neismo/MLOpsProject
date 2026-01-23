@@ -57,6 +57,7 @@ dev = [
     "mypy>=1.19.1",
     "ruff>=0.14.11",
     "types-requests>=2.32.0",
+    "locust>=2.43.1",
 ]
 
 

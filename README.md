@@ -171,6 +171,20 @@ curl -X POST http://localhost:8000/search \
   -d '{"abstract": "We study neural network optimization...", "k": 5}'
 ```
 
+### Load testing
+
+The project uses [Locust](https://locust.io/) for load testing. A comprehensive locustfile is provided in `load_tests/locustfile.py`.
+
+To run a load test (ensure the API is running first):
+```bash
+uv run locust -f load_tests/locustfile.py --host http://localhost:8000
+```
+
+For a headless run (stress test):
+```bash
+uv run locust -f load_tests/locustfile.py --headless -u 100 -r 10 --run-time 1m --host http://localhost:8000
+```
+
 ## Models
 
 We use the embedding model [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), a lightweight text embedding model with 22M parameters that offers a good balance between performance and training efficiency. We also experimented with [ModernBERT](https://huggingface.co/answerdotai/ModernBERT-base) to compare how model scale impacts embedding quality and downstream performance.
@@ -203,7 +217,7 @@ The directory structure of the project looks like this:
 │   ├── dataset.yaml
 │   ├── gpu_train_vertex.yaml
 │   └── train_config.yaml
-├── data/                     # Data directory (DVC tracked)
+├── data/                     # Versioned datasets (DVC)
 │   ├── train_pairs/
 │   ├── eval_pairs/
 │   └── test/
@@ -226,14 +240,16 @@ The directory structure of the project looks like this:
 │       ├── tags.md
 │       └── training.md
 ├── figs/                     # Figures for README
+├── load_tests/               # Load testing with Locust
+│   ├── load_test.py
+│   ├── load_test_health.py
+│   └── locustfile.py
 ├── models/                   # Trained models
 ├── notebooks/                # Jupyter notebooks
 ├── reports/                  # Reports
 │   ├── README.md
 │   └── report.py
 ├── scripts/                  # Utility scripts
-│   ├── load_test.py
-│   └── load_test_health.py
 ├── src/                      # Source code
 │   └── mlops_project/
 │       ├── __init__.py
