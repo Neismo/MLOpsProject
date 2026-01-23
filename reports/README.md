@@ -533,7 +533,11 @@ The most expensive services were generally the `Vertex AI` and also the `Cloud R
 >
 > Answer:
 
-A simple frontend was implemented to serve as a basic "search" for similar papers based on abstract embeddings from the trained model. An example was shown earlier from the API, but for good measure it is shown here again: ![](figures/index.png)
+We built a semantic paper search system using FAISS as our vector database, indexing ~2.5 million arXiv paper embeddings from our fine-tuned model. The IndexIVFFlat index with 4096 clusters gives us fast approximate nearest neighbor search at scale. Paper metadata is stored in SQLite for efficient lazy-loading, keeping memory usage low.
+
+A web frontend lets users paste an abstract or sentence to find semantically similar papers, displaying similarity scores and direct links to arXiv pages and PDFs. This turns our trained embedding model into a practical research tool.
+
+![](figures/index.png)
 
 ### Question 29
 
