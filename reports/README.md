@@ -218,7 +218,7 @@ We introduced quite a few rules for code quality and formatting. Mostly done by 
 >
 > Answer:
 
-We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are very important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a reliable framework, building on top of Hugginface Trainer interface.
+We've implemented quite a few tests. In total we implemented 6 model tests, 34 data tests, and 6 API tests. Some of these run multiple times with different inputs. Primarily we are testing the data and its structure, as well as the model input/output shapes through mocks. These are important parts of the pipeline, as the data has to be correctly structured with the usage of `Sentence-Transformers` training losses. We did not do tests for the training loop, as that was outsourced to the `Trainer` class from `Sentence-Transformers` which is a reliable framework, building on top of Hugginface Trainer interface.
 
 ### Question 8
 
@@ -331,7 +331,7 @@ Reproducibility of experiments is indeed an important part. We introduced seeded
 >
 > Answer:
 
-Some of the most important things to look for when training, is the that the loss on evaluation (and train for that matter) is decreasing. This is a sign that the model _is_ learning something, and that it is correctly aligning data in the embedding space. We furthermore look at some top _k_ metrics like accuracy and recall. These are easier to interpret, and we would ideally like to see this getting lower as well, as the model trains. It usually does this. The different values of _k_ is simply for matrics sake, we should ideally see top10, for example, to be very high, but top1 more volatile during training. An example of a run can be seen right here: ![wandb](figures/wandb.png)
+Some of the most important things to look for when training is that the loss on evaluation (and train for that matter) is decreasing. This is a sign that the model _is_ learning something, and that it is correctly aligning data in the embedding space. A decreasing loss indicates the model is pushing similar abstracts closer together while separating dissimilar ones in the vector space. We furthermore look at some top _k_ metrics like accuracy and recall. These are easier to interpret, and we would ideally like to see these increasing as the model trains. It usually does this. The different values of _k_ (e.g., top1, top5, top10) help us understand retrieval quality at different granularities—top10 should be high indicating good general retrieval, while top1 being more volatile during training reflects the difficulty of exact matching. We also track the learning rate schedule and batch processing times to ensure training is progressing smoothly without any bottlenecks. Additionally, W&B allows us to compare multiple runs side-by-side, which was useful when experimenting with different loss functions (MultipleNegativesRankingLoss vs others) and hyperparameters like batch size and learning rate. The platform also made it easy to share results with team members. An example of a run can be seen right here: ![wandb](figures/wandb.png)
 
 ### Question 15
 
@@ -435,7 +435,7 @@ We did not really explicitly use Compute Engine, but we did use it through Verte
 >
 > Answer:
 
-We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle at first, as getting the CUDA image from NVIDIA working was challenging, but we were able to get it to work by using a cuDNN image on the latest stable Ubuntu image with Python 3.12. This allowed us to run and train the models, and load and save them in the associated bucket we showed earlier. We also opted for a programmatic approach to secrets managing the `wandb_api_key`, as opposed to a `vertex.yaml` approach with substitution shown in exercises.
+We did manage to train and store our model in the cloud using Vertex AI. It did take some struggle at first, as getting the CUDA image from NVIDIA working was challenging, but we were able to get it to work by using a cuDNN image on the latest stable Ubuntu image with Python 3.12. This allowed us to run and train the models on cloud GPUs, and load and save them in the associated bucket we showed earlier. We also opted for a programmatic approach to secrets, managing the `wandb_api_key` through Google Secret Manager, as opposed to a `vertex.yaml` approach with substitution shown in exercises.
 
 ## Deployment
 
@@ -452,7 +452,7 @@ We did manage to train and store our model in the cloud using Vertex AI. It did 
 >
 > Answer:
 
-We have written and deployed an API for our embeddings model through the `Cloud Run` services. For this, FastAPI was used. We also have a simple front-end to go with it, to allow one to search for similar scientific papers based on abstracts. A list of the top 10 results will be shown, as can be seen here: 
+We have written and deployed an API for our embeddings model through the `Cloud Run` services. For this, FastAPI was used. We also have a simple front-end to go with it, to allow one to search for similar scientific papers based on abstracts. A list of the top 10 results will be shown, as can be seen here:
 
 ![image](figures/index.png)
 
@@ -560,6 +560,12 @@ A web frontend lets users paste an abstract or sentence to find semantically sim
 
 An overview of the architecture of our system can be seen here: ![project overview](figures/diagram.png)
 
+The starting point is local development, where we use `uv` for dependency management and `pre-commit` hooks for code quality (Ruff linting/formatting, Mypy type-checking). Code follows a cookiecutter template with clear separation between source code, tests, configs, and dockerfiles. When we push code to GitHub, it triggers our CI/CD pipeline through GitHub Actions. The pipeline runs tests across Windows, Ubuntu, and macOS, performs linting checks, and builds Docker images. For training, a dedicated workflow builds a CUDA-enabled Docker image and pushes it to Google Artifact Registry.
+
+From Artifact Registry, the training image is deployed to Vertex AI for model training. The training job pulls data from Google Cloud Storage buckets (where our preprocessed arXiv dataset resides), trains the SentenceTransformer model, and logs metrics to Weights & Biases for experiment tracking. The trained model artifacts are saved back to Cloud Storage.
+
+For serving, a separate API Docker image is built and deployed to Cloud Run. This containerized FastAPI application loads the trained model and FAISS index from Cloud Storage at startup. The API exposes endpoints for embedding generation and semantic search, with Prometheus metrics for monitoring. A web frontend is served alongside the API, allowing users to search for similar papers. Data versioning is handled through DVC with remote storage in Google Cloud Storage.
+
 ### Question 30
 
 > **Discuss the overall struggles of the project. Where did you spend most time and what did you do to overcome these**
@@ -572,7 +578,15 @@ An overview of the architecture of our system can be seen here: ![project overvi
 >
 > Answer:
 
-Most of the frustratings came with working with Google Cloud. The cloud interface was slow and annoying to work with generally, and different parts failed at different times, usually after a long wait, with errors that weren't always so human readable. This meant a lot of time was spent waiting for failure/success and debugging the errors we eventually received. Permissions was a bit annoying as well, albeit easily passed if `owner` role was given out freely.
+Most of the frustrations came with working with Google Cloud. The cloud interface was slow and annoying to work with generally, and different parts failed at different times, usually after a long wait, with errors that weren't always human readable. This meant a lot of time was spent waiting for failure/success and debugging the errors we eventually received. Permissions were a bit annoying as well, albeit easily passed if `owner` role was given out freely.
+
+Getting the CUDA-enabled Docker image to work properly was particularly challenging. The combination of NVIDIA base images, cuDNN, Python 3.12, and our specific dependencies required multiple iterations to get right. Build times were long, making the feedback loop painful. We eventually settled on a multi-stage build approach to keep the final image size manageable while including all necessary CUDA libraries.
+
+Another significant challenge was coordinating work across team members with different development environments (Windows, macOS, Linux). While Docker helped with deployment consistency, local development still had quirks—especially around GPU access and path handling. Our CI pipeline testing across all three operating systems caught several of these issues early.
+
+The Vertex AI integration also required careful handling of secrets and authentication. We spent time debugging authentication issues between GitHub Actions, Artifact Registry, and Vertex AI. The programmatic approach to secret management (using Google Secret Manager) ended up being more reliable than YAML substitution patterns.
+
+Finally, managing the large arXiv dataset (2.5M+ papers) required attention to memory efficiency. We implemented streaming data loading and used SQLite for metadata storage to avoid loading everything into memory at once.
 
 ### Question 31
 
