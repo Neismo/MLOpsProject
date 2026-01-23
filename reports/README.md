@@ -361,7 +361,7 @@ Docker is a powerful tool to create containerized applications. It also serves t
 >
 > Answer:
 
---- question 16 fill here ---
+When it was convenient, which it usually was, we worked in notebooks to get a feeling for the flow, how input and output was to the various third party packages, and how interfacing between them were done. This gives a good overview and quick way to test stuff, after which it could be added to scripts where it mimicked what we did in those. Some things weren't always clear, for example we could build CUDA images locally which worked, but failed in the cloud. These were a bit harder to debug other than trying to discern the error, fix it, and try again.
 
 ## Working in the cloud
 
