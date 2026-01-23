@@ -14,3 +14,15 @@ disabled for offline runs or CI. We ship [Docker](https://docs.docker.com/) imag
 
 `configs/gpu_train_vertex.yaml` describes a [Vertex AI](https://cloud.google.com/vertex-ai/docs) custom job for GPU
 training. Combine it with the Cloud Build image to run managed training jobs.
+
+## GCP workflow narrative
+While the project can run end to end on a laptop, the cloud path is designed to be the durable, repeatable route for
+large runs. Dataset state is tracked with DVC and the configured remote in `.dvc/config` points to a GCS bucket
+(`gs://mlops-proj`), so the exact same dataset snapshot can be pulled into local experiments or cloud training without
+recreating preprocessing steps.
+
+The training environment is built by Cloud Build from `cloudbuild.yaml`, which pushes a GPU-ready image to Artifact
+Registry in the `europe-west1` region. That same image URI is referenced in `configs/gpu_train_vertex.yaml`, so a Vertex
+AI custom job executes the identical container that you run locally with Docker. If you reuse this setup in another GCP
+project or region, update the registry path and bucket name so the cloud jobs can resolve the image and storage
+locations correctly.

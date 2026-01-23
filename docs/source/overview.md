@@ -28,6 +28,15 @@ We build similarity search indexes with [FAISS](https://faiss.ai/), export ONNX 
 [FastAPI](https://fastapi.tiangolo.com/) service with `/health` and `/embed`. Dockerized training and inference run
 through CI checks, and we compare larger transformer backbones.
 
+## Where GCP fits
+Local runs are supported for development, but the project’s cloud story assumes GCP as the durable backbone for storage
+and managed training. Dataset state is tracked with DVC and stored in a GCS remote, so the same versioned data snapshot
+can be used by both local experiments and cloud jobs without reprocessing.
+
+The training container is built by Cloud Build and pushed to Artifact Registry, then `configs/gpu_train_vertex.yaml`
+points Vertex AI to that image for GPU runs. When `meta.use_gcs=true`, training and evaluation artifacts can be read
+from and written to GCS, keeping outputs aligned with the dataset version that produced them.
+
 ## Inputs, outputs, and components
 Inputs are the `title` and `abstract` fields plus subject labels (`primary_subject`, `subjects`). Outputs include
 trained embedding models and ONNX exports, pair datasets for contrastive learning, retrieval and classification
