@@ -313,3 +313,65 @@ class TestSearchAPIEndpoint:
 
         response = api_client_with_faiss.post("/search", json={"abstract": "Test", "k": 101})
         assert response.status_code == 422
+
+
+class TestMetricAPIEndpoint:
+    """Tests for Prometheus metrics endpoint."""
+
+    @pytest.fixture
+    def api_client_with_faiss(self, monkeypatch, tmp_path):
+        """TestClient with mocked FAISS index for API tests."""
+
+        # Create mock embeddings and metadata
+        np.random.seed(123)
+        embeddings = np.random.randn(100, 384).astype(np.float32)
+        embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+        metadata = [
+            {
+                "title": f"Test Paper {i}",
+                "abstract": f"Abstract for test paper {i}",
+                "primary_subject": "Test Subject",
+                "subjects": ["Test Subject", "Other"],
+            }
+            for i in range(100)
+        ]
+
+        # Build and save test index
+        index_dir = tmp_path / "faiss"
+        index_dir.mkdir()
+        test_index = FAISSIndex.build(embeddings, metadata, nlist=8, nprobe=4)
+        test_index.save(index_dir)
+
+        # Mock model
+        class _MockModel:
+            def __init__(self, model_path, device=None):
+                pass
+
+            def encode(self, text, convert_to_numpy=True, normalize_embeddings=True):
+                np.random.seed(hash(text) % (2**32))
+                embedding = np.random.randn(384).astype(np.float32)
+                return embedding / np.linalg.norm(embedding)
+
+        monkeypatch.setattr("sentence_transformers.SentenceTransformer", _MockModel)
+
+        model_dir = tmp_path / "model"
+        model_dir.mkdir()
+        monkeypatch.setenv("MODEL_PATH", str(model_dir))
+        monkeypatch.setenv("INDEX_PATH", str(index_dir))
+
+        import importlib
+        import mlops_project.api
+
+        importlib.reload(mlops_project.api)
+
+        from fastapi.testclient import TestClient
+
+        return TestClient(mlops_project.api.app)
+
+    def test_metrics_endpoint(self, api_client_with_faiss):
+        """Test that /metrics endpoint returns Prometheus metrics."""
+        response = api_client_with_faiss.get("/metrics")
+        assert response.status_code == 200
+        content = response.text
+        assert "api_request_count" in content
+        assert "Total number of API requests" in content
