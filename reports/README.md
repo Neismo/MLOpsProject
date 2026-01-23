@@ -521,7 +521,7 @@ In short, we set up a simple alert system when the amount of requests (logs) fro
 >
 > Answer:
 
-The most expensive services were generally the `Vertex AI` and also the `Cloud Run` services. This is of course due to renting GPUs on an hourly basis, and running containerized images. We ended up racking up around 100+ (UPDATE THIS TO CURRENT) by the end of this project, which is not too bad, but we also had short training times. Working in the cloud has its perks, that things should just work and are running, but it can be incredibly infuriating when things are not explained well, break down with unreadable error messages, or long wait times just to see a "permission denied" due to a missing role. The prices are also quite high compared to competitors, but it is Google after all.
+The most expensive services were generally the `Vertex AI` and also the `Cloud Run` services. This is of course due to renting GPUs on an hourly basis, and running containerized images. We ended up racking up around 150 DKK worth of credits, which is not too bad, but we also had short training times. Working in the cloud has its perks, that things should just work and are running, but it can be incredibly infuriating when things are not explained well, break down with unreadable error messages, or long wait times just to see a "permission denied" due to a missing role. The prices are also quite high compared to competitors, but it is Google after all.
 
 ### Question 28
 
