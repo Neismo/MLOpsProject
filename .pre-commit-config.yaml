@@ -14,7 +14,7 @@ repos:
         args: [--pytest-test-first]
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.14.11
+  rev: v0.16.7
   hooks:
     # Run the linter.
     - id: ruff-check
@@ -23,11 +23,11 @@ repos:
     - id: ruff-format
       args: [--line-length=120]
 -   repo: https://github.com/PyCQA/autoflake
-    rev: v2.3.1
+    rev: v2.4.0
     hooks:
     -   id: autoflake
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+    rev: v2.3.1
     hooks:
     -   id: mypy
         args: [--ignore-missing-imports]
